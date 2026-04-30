@@ -10,7 +10,7 @@ description: >
 
 # Checkpoint Commit
 
-Create a comprehensive checkpoint commit that captures all current changes with a detailed, well-structured commit message.
+Create a checkpoint commit that captures all current changes — but only after the code passes lint, type check, and build.
 
 ## Instructions
 
@@ -23,7 +23,17 @@ Run these commands to understand the full picture:
 3. `git diff --cached` — see already-staged changes
 4. `git log -5 --oneline` — understand this repo's commit message style
 
-### Step 2: Stage Everything
+### Step 2: Quality Checks
+
+Run all three checks. If any fail, fix the issues before proceeding — do not skip or ignore failures.
+
+1. `npm run lint` — fix any lint errors
+2. `npm run type-check` — fix any type errors (if the script doesn't exist, try `npx tsc --noEmit`)
+3. `npm run build` — fix any build errors
+
+Iterate until all three pass cleanly. Only then move to the next step.
+
+### Step 3: Stage Everything
 
 Stage all changes — tracked modifications, deletions, and new untracked files:
 
@@ -31,20 +41,16 @@ Stage all changes — tracked modifications, deletions, and new untracked files:
 git add -A
 ```
 
-### Step 3: Craft the Commit Message
+### Step 4: Craft the Commit Message
 
 Write a commit message following the project's existing conventions (observed from `git log`). Structure:
 
 - **First line**: clear, concise summary in imperative mood (50-72 chars)
   - Use conventional commit prefixes where the project uses them: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, etc.
-- **Body** (separated by blank line): detailed description including:
-  - What changes were made (key modifications)
-  - Why these changes were made (purpose/motivation)
-  - Important technical details or decisions
-  - Breaking changes or migration notes if applicable
+- **Body** (separated by blank line): a short TL;DR of the changes — 1-3 sentences max. No bullet lists, no file-by-file breakdowns, no lengthy explanations.
 - **Footer**: co-author attribution
 
-### Step 4: Commit
+### Step 5: Commit
 
 Create the commit using a heredoc for proper formatting:
 
@@ -52,14 +58,14 @@ Create the commit using a heredoc for proper formatting:
 git commit -m "$(cat <<'EOF'
 {first line}
 
-{body}
+{tldr}
 
 Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```
 
-### Step 5: Report
+### Step 6: Report
 
 Display:
 - The commit hash and message summary
@@ -70,6 +76,7 @@ Display:
 
 - Stage and commit everything — do not skip files unless they are clearly sensitive (`.env`, credentials)
 - If the repo has no git history, run `git init` first
-- Make the commit message descriptive enough that someone reading `git log` understands what was accomplished
+- All quality checks (lint, type-check, build) MUST pass before committing — fix issues, don't skip them
+- Keep the commit body short — a TL;DR, not an essay
 - Follow the project's existing commit conventions (check the log first)
 - Do not push — only commit locally

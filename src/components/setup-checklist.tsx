@@ -47,26 +47,47 @@ function StatusIcon({ ok }: { ok: boolean }) {
 
 export function SetupChecklist() {
   const [data, setData] = useState<DiagnosticsResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
+  function fetchData() {
     setLoading(true);
     setError(null);
-    try {
-      const res = await fetch("/api/diagnostics", { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = (await res.json()) as DiagnosticsResponse;
-      setData(json);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load diagnostics");
-    } finally {
-      setLoading(false);
-    }
+    fetch("/api/diagnostics", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        setData(json as DiagnosticsResponse);
+      })
+      .catch((e) => {
+        setError(
+          e instanceof Error ? e.message : "Failed to load diagnostics"
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   useEffect(() => {
-    load();
+    fetch("/api/diagnostics", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        setData(json as DiagnosticsResponse);
+      })
+      .catch((e) => {
+        setError(
+          e instanceof Error ? e.message : "Failed to load diagnostics"
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const steps = [
@@ -129,7 +150,7 @@ export function SetupChecklist() {
             {completed}/{steps.length} completed
           </p>
         </div>
-        <Button size="sm" onClick={load} disabled={loading}>
+        <Button size="sm" onClick={fetchData} disabled={loading}>
           {loading ? "Checking..." : "Re-check"}
         </Button>
       </div>

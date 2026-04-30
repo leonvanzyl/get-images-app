@@ -32,23 +32,44 @@ export function useDiagnostics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchDiagnostics() {
+  function refetch() {
     setLoading(true);
     setError(null);
-    try {
-      const res = await fetch("/api/diagnostics", { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = (await res.json()) as DiagnosticsResponse;
-      setData(json);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load diagnostics");
-    } finally {
-      setLoading(false);
-    }
+    fetch("/api/diagnostics", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        setData(json as DiagnosticsResponse);
+      })
+      .catch((e) => {
+        setError(
+          e instanceof Error ? e.message : "Failed to load diagnostics"
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   useEffect(() => {
-    fetchDiagnostics();
+    fetch("/api/diagnostics", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        setData(json as DiagnosticsResponse);
+      })
+      .catch((e) => {
+        setError(
+          e instanceof Error ? e.message : "Failed to load diagnostics"
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const isAuthReady =
@@ -61,7 +82,7 @@ export function useDiagnostics() {
     data,
     loading,
     error,
-    refetch: fetchDiagnostics,
+    refetch,
     isAuthReady: Boolean(isAuthReady),
     isAiReady: Boolean(isAiReady),
   };

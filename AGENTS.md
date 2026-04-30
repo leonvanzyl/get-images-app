@@ -27,5 +27,5 @@
 
 ## UI DESIGN
 
-- Always following the UI design system when creating or reviewing components or pages.
+- Always follow the UI design system when creating or reviewing components or pages.
 - Design System: @DESIGN.md

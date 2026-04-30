@@ -1,5 +1,6 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { GoogleSignInSection } from "@/components/auth/google-sign-in-section"
 import { SignInButton } from "@/components/auth/sign-in-button"
 import {
   Card,
@@ -36,6 +37,7 @@ export default async function LoginPage({
               Password reset successfully. Please sign in with your new password.
             </p>
           )}
+          <GoogleSignInSection />
           <SignInButton />
         </CardContent>
       </Card>
