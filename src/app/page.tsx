@@ -18,7 +18,7 @@ export default function Home() {
               <Bot className="h-7 w-7 text-primary" />
             </div>
             <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
-              Starter Kit
+              Starter Kits
             </h1>
           </div>
           <h2 className="text-2xl font-semibold text-muted-foreground">
