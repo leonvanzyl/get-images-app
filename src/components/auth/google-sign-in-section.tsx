@@ -1,5 +1,4 @@
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button"
-import { Separator } from "@/components/ui/separator"
 
 export function GoogleSignInSection() {
   const hasGoogle =
@@ -10,17 +9,18 @@ export function GoogleSignInSection() {
   }
 
   return (
-    <div className="mb-6 flex w-full max-w-sm flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <GoogleSignInButton />
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <Separator />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">
-            Or continue with email
-          </span>
-        </div>
+      <div
+        className="relative flex items-center"
+        role="separator"
+        aria-label="Or continue with email"
+      >
+        <span aria-hidden="true" className="h-px flex-1 bg-border/60" />
+        <span className="px-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          Or with email
+        </span>
+        <span aria-hidden="true" className="h-px flex-1 bg-border/60" />
       </div>
     </div>
   )

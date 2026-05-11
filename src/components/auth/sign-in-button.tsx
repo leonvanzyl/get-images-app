@@ -8,6 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signIn, useSession } from "@/lib/auth-client"
 
+const INPUT_CLASSES =
+  "h-12 rounded-none border-border/60 bg-input px-3 text-sm shadow-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-primary/30 focus-visible:ring-[2px]"
+
+const LABEL_CLASSES =
+  "font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+
 export function SignInButton() {
   const { data: session, isPending: sessionPending } = useSession()
   const router = useRouter()
@@ -17,7 +23,14 @@ export function SignInButton() {
   const [isPending, setIsPending] = useState(false)
 
   if (sessionPending) {
-    return <Button disabled>Loading...</Button>
+    return (
+      <Button
+        disabled
+        className="h-12 w-full rounded-none font-mono text-[11px] uppercase tracking-[0.18em]"
+      >
+        Loading…
+      </Button>
+    )
   }
 
   if (session) {
@@ -50,9 +63,11 @@ export function SignInButton() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className={LABEL_CLASSES}>
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
@@ -61,37 +76,56 @@ export function SignInButton() {
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isPending}
+          className={INPUT_CLASSES}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password" className={LABEL_CLASSES}>
+            Password
+          </Label>
+          <Link
+            href="/forgot-password"
+            className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
+          >
+            Forgot?
+          </Link>
+        </div>
         <Input
           id="password"
           type="password"
-          placeholder="Your password"
+          placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           disabled={isPending}
+          className={INPUT_CLASSES}
         />
       </div>
+
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="font-mono text-xs uppercase tracking-wide text-destructive">
+          <span aria-hidden="true" className="mr-2">
+            !
+          </span>
+          {error}
+        </p>
       )}
-      <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Signing in..." : "Sign in"}
+
+      <Button
+        type="submit"
+        size="lg"
+        disabled={isPending}
+        className="group glow-lime h-12 w-full rounded-none font-mono text-[11px] uppercase tracking-[0.22em]"
+      >
+        {isPending ? "Signing in…" : "Sign in"}
+        <span
+          aria-hidden="true"
+          className="ml-1 transition-transform group-hover:translate-x-0.5"
+        >
+          →
+        </span>
       </Button>
-      <div className="text-center text-sm text-muted-foreground">
-        <Link href="/forgot-password" className="hover:underline">
-          Forgot password?
-        </Link>
-      </div>
-      <div className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <Link href="/register" className="text-primary hover:underline">
-          Sign up
-        </Link>
-      </div>
     </form>
   )
 }

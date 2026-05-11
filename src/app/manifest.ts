@@ -2,14 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Agentic Coding Boilerplate",
-    short_name: "Agentic",
+    name: "Get Images",
+    short_name: "Get Images",
     description:
-      "Complete agentic coding boilerplate with authentication, database, AI integration, and modern tooling",
+      "Generate beautiful images from a prompt, and wire them into any AI agent via MCP.",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#000000",
+    background_color: "#0b0b0d",
+    theme_color: "#c8ff3a",
     icons: [
       {
         src: "/favicon.ico",

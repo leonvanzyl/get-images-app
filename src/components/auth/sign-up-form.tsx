@@ -1,12 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signUp } from "@/lib/auth-client"
+
+const INPUT_CLASSES =
+  "h-12 rounded-none border-border/60 bg-input px-3 text-sm shadow-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-primary/30 focus-visible:ring-[2px]"
+
+const LABEL_CLASSES =
+  "font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
 
 export function SignUpForm() {
   const router = useRouter()
@@ -55,9 +60,11 @@ export function SignUpForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
+        <Label htmlFor="name" className={LABEL_CLASSES}>
+          Name
+        </Label>
         <Input
           id="name"
           type="text"
@@ -66,10 +73,13 @@ export function SignUpForm() {
           onChange={(e) => setName(e.target.value)}
           required
           disabled={isPending}
+          className={INPUT_CLASSES}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className={LABEL_CLASSES}>
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
@@ -78,44 +88,63 @@ export function SignUpForm() {
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isPending}
+          className={INPUT_CLASSES}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password" className={LABEL_CLASSES}>
+          Password
+        </Label>
         <Input
           id="password"
           type="password"
-          placeholder="Create a password"
+          placeholder="At least 8 characters"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           disabled={isPending}
+          className={INPUT_CLASSES}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Label htmlFor="confirmPassword" className={LABEL_CLASSES}>
+          Confirm password
+        </Label>
         <Input
           id="confirmPassword"
           type="password"
-          placeholder="Confirm your password"
+          placeholder="Type it again"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
           disabled={isPending}
+          className={INPUT_CLASSES}
         />
       </div>
+
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="font-mono text-xs uppercase tracking-wide text-destructive">
+          <span aria-hidden="true" className="mr-2">
+            !
+          </span>
+          {error}
+        </p>
       )}
-      <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Creating account..." : "Create account"}
+
+      <Button
+        type="submit"
+        size="lg"
+        disabled={isPending}
+        className="group glow-lime h-12 w-full rounded-none font-mono text-[11px] uppercase tracking-[0.22em]"
+      >
+        {isPending ? "Creating account…" : "Create account"}
+        <span
+          aria-hidden="true"
+          className="ml-1 transition-transform group-hover:translate-x-0.5"
+        >
+          →
+        </span>
       </Button>
-      <div className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
-        <Link href="/login" className="text-primary hover:underline">
-          Sign in
-        </Link>
-      </div>
     </form>
   )
 }

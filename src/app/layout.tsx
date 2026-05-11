@@ -1,53 +1,62 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Hanken_Grotesk,
+  JetBrains_Mono,
+} from "next/font/google";
 import "./globals.css";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fontDisplay = Bricolage_Grotesque({
+  variable: "--font-display",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fontBody = Hanken_Grotesk({
+  variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const fontMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Agentic Coding Boilerplate",
-    template: "%s | Agentic Coding Boilerplate",
+    default: "Get Images — AI image generation for humans and agents",
+    template: "%s | Get Images",
   },
   description:
-    "Complete agentic coding boilerplate with authentication, database, AI integration, and modern tooling - perfect for building AI-powered applications and autonomous agents by Leon van Zyl",
+    "Generate beautiful images from a prompt, and wire them into any AI agent via MCP.",
   keywords: [
+    "AI image generation",
+    "MCP",
+    "Model Context Protocol",
+    "image API",
+    "generative AI",
+    "AI agents",
     "Next.js",
-    "React",
-    "TypeScript",
-    "AI",
-    "OpenRouter",
-    "Boilerplate",
-    "Authentication",
-    "PostgreSQL",
   ],
-  authors: [{ name: "Leon van Zyl" }],
-  creator: "Leon van Zyl",
+  authors: [{ name: "Get Images" }],
+  creator: "Get Images",
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Agentic Coding Boilerplate",
-    title: "Agentic Coding Boilerplate",
+    siteName: "Get Images",
+    title: "Get Images — AI image generation for humans and agents",
     description:
-      "Complete agentic coding boilerplate with authentication, database, AI integration, and modern tooling",
+      "Generate beautiful images from a prompt, and wire them into any AI agent via MCP.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Agentic Coding Boilerplate",
+    title: "Get Images — AI image generation for humans and agents",
     description:
-      "Complete agentic coding boilerplate with authentication, database, AI integration, and modern tooling",
+      "Generate beautiful images from a prompt, and wire them into any AI agent via MCP.",
   },
   robots: {
     index: true,
@@ -55,23 +64,22 @@ export const metadata: Metadata = {
   },
 };
 
-// JSON-LD structured data for SEO
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Agentic Coding Boilerplate",
+  name: "Get Images",
   description:
-    "Complete agentic coding boilerplate with authentication, database, AI integration, and modern tooling",
-  applicationCategory: "DeveloperApplication",
+    "Generate beautiful images from a prompt, and wire them into any AI agent via MCP.",
+  applicationCategory: "DesignApplication",
   operatingSystem: "Any",
   offers: {
     "@type": "Offer",
     price: "0",
     priceCurrency: "USD",
   },
-  author: {
-    "@type": "Person",
-    name: "Leon van Zyl",
+  publisher: {
+    "@type": "Organization",
+    name: "Get Images",
   },
 };
 
@@ -89,17 +97,15 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} grain antialiased min-h-screen flex flex-col`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <SiteHeader />
-          <main id="main-content" className="flex-1">{children}</main>
-          <SiteFooter />
+          {children}
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

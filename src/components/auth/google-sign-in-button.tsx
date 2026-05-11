@@ -53,14 +53,19 @@ export function GoogleSignInButton() {
   return (
     <div className="flex w-full flex-col gap-2">
       {error ? (
-        <p className="text-center text-sm text-destructive">{error}</p>
+        <p className="font-mono text-xs uppercase tracking-wide text-destructive">
+          <span aria-hidden="true" className="mr-2">
+            !
+          </span>
+          {error}
+        </p>
       ) : null}
       <Button
         type="button"
         variant="outline"
-        className="w-full gap-2"
         onClick={handleGoogle}
         disabled={isPending}
+        className="group h-12 w-full gap-3 rounded-none border-border/60 bg-transparent font-mono text-[11px] uppercase tracking-[0.22em] transition-colors hover:border-primary/40 hover:bg-accent/40"
       >
         <GoogleMark className="size-5 shrink-0" />
         {isPending ? "Redirecting…" : "Continue with Google"}
