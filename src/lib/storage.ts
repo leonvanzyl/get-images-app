@@ -152,14 +152,14 @@ export async function upload(
   const hasVercelBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
   if (hasVercelBlob) {
-    // Use Vercel Blob storage
+    // Use Vercel Blob storage (private access — served via /api/blob proxy)
     const pathname = folder ? `${folder}/${sanitizedFilename}` : sanitizedFilename;
     const blob = await put(pathname, buffer, {
-      access: "public",
+      access: "private",
     });
 
     return {
-      url: blob.url,
+      url: `/api/blob/${blob.pathname}`,
       pathname: blob.pathname,
     };
   } else {
