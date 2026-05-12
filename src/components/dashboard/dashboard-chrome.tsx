@@ -22,17 +22,19 @@ import { DashboardTopbar } from "./dashboard-topbar";
  */
 export function DashboardChrome({
   user,
+  creditBalance,
   children,
 }: {
   user: DashboardUser;
+  creditBalance: number;
   children: React.ReactNode;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[260px_1fr] bg-background text-foreground">
-      <aside className="hidden md:block border-r border-border bg-sidebar">
-        <DashboardSidebar user={user} />
+      <aside className="hidden md:block sticky top-0 h-screen overflow-y-auto border-r border-border bg-sidebar">
+        <DashboardSidebar user={user} creditBalance={creditBalance} />
       </aside>
 
       <div className="flex min-w-0 flex-col">
@@ -54,10 +56,13 @@ export function DashboardChrome({
               Primary navigation for the Get Images dashboard.
             </SheetDescription>
           </SheetHeader>
-          <DashboardSidebar
-            user={user}
-            onNavigate={() => setMobileNavOpen(false)}
-          />
+          {mobileNavOpen && (
+            <DashboardSidebar
+              user={user}
+              creditBalance={creditBalance}
+              onNavigate={() => setMobileNavOpen(false)}
+            />
+          )}
         </SheetContent>
       </Sheet>
     </div>

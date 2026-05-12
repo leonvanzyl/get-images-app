@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, index, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 // IMPORTANT! ID fields should ALWAYS use UUID types, EXCEPT the BetterAuth tables.
 
@@ -84,7 +84,7 @@ export const verification = pgTable("verification", {
 export const generation = pgTable(
   "generation",
   {
-    id: text("id").primaryKey(),
+    id: uuid("id").defaultRandom().primaryKey(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -101,5 +101,43 @@ export const generation = pgTable(
   (table) => [
     index("generation_user_id_idx").on(table.userId),
     index("generation_created_at_idx").on(table.createdAt),
+  ]
+);
+
+export const creditBalance = pgTable(
+  "credit_balance",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .unique()
+      .references(() => user.id, { onDelete: "cascade" }),
+    balance: integer("balance").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("credit_balance_user_id_idx").on(table.userId)]
+);
+
+export const creditTransaction = pgTable(
+  "credit_transaction",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    amount: integer("amount").notNull(),
+    type: text("type").notNull(),
+    description: text("description"),
+    referenceId: text("reference_id"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("credit_transaction_user_id_idx").on(table.userId),
+    index("credit_transaction_created_at_idx").on(table.createdAt),
+    index("credit_transaction_type_idx").on(table.type),
   ]
 );

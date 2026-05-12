@@ -1,11 +1,18 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generation } from "@/lib/schema";
+import {
+  getBalance,
+  deductCredit,
+  refundCredit,
+  InsufficientCreditsError,
+} from "@/services/credits";
 import {
   generate,
   listModels,
@@ -46,6 +53,20 @@ export async function generateImageAction(
 
   try {
     const { prompt, modelId, aspectRatio, style, seed } = parsed.data;
+
+    // Fast pre-check — no lock, just bail early if balance is clearly zero
+    const balance = await getBalance(session.user.id);
+    if (balance < 1) {
+      return {
+        success: false,
+        error:
+          "No credits remaining on this reel. Add credits to resume production.",
+      };
+    }
+
+    // Authoritative transactional deduction (row-level lock)
+    await deductCredit(session.user.id);
+
     const result = await generate({
       prompt,
       modelId,
@@ -54,8 +75,19 @@ export async function generateImageAction(
       ...(style !== undefined ? { style } : {}),
       ...(seed !== undefined ? { seed } : {}),
     });
+
+    revalidatePath("/dashboard", "layout");
     return { success: true, data: result };
   } catch (error) {
+    // Refund the credit if generation failed — but not if the deduction
+    // itself was the source of the error (e.g. race-condition insufficient balance)
+    if (!(error instanceof InsufficientCreditsError)) {
+      await refundCredit(
+        session.user.id,
+        "Generation failed — credit refunded",
+      );
+    }
+
     const message =
       error instanceof Error ? error.message : String(error);
     return { success: false, error: message };
@@ -101,6 +133,12 @@ export async function getLibraryImagesAction(): Promise<LibraryImage[]> {
     url: row.imageUrl,
     favorite: false,
   }));
+}
+
+export async function getCreditBalanceAction(): Promise<number> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) return 0;
+  return getBalance(session.user.id);
 }
 
 export async function deleteGenerationAction(

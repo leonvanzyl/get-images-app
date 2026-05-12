@@ -53,11 +53,9 @@ export async function generate(
     maxSize: 20 * 1024 * 1024,
   });
 
-  const id = crypto.randomUUID();
   const now = new Date();
 
-  await db.insert(generation).values({
-    id,
+  const [inserted] = await db.insert(generation).values({
     userId: input.userId,
     prompt: trimmedPrompt,
     modelId: input.modelId,
@@ -68,11 +66,11 @@ export async function generate(
     imageUrl: url,
     mediaType: generatedFile.mediaType ?? "image/png",
     createdAt: now,
-  });
+  }).returning({ id: generation.id });
 
   return {
     image: {
-      id,
+      id: inserted!.id,
       url,
       prompt: trimmedPrompt,
       modelId: input.modelId,

@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardChrome } from "@/components/dashboard/dashboard-chrome";
 import { auth } from "@/lib/auth";
+import { getBalance } from "@/services/credits";
 
 export default async function DashboardLayout({
   children,
@@ -14,6 +15,8 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const creditBalance = await getBalance(session.user.id);
+
   return (
     <DashboardChrome
       user={{
@@ -21,6 +24,7 @@ export default async function DashboardLayout({
         email: session.user.email,
         image: session.user.image ?? null,
       }}
+      creditBalance={creditBalance}
     >
       {children}
     </DashboardChrome>

@@ -22,6 +22,13 @@
       "when": 1778576486417,
       "tag": "0002_high_starbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778583098269,
+      "tag": "0003_lazy_darwin",
+      "breakpoints": true
     }
   ]
 }

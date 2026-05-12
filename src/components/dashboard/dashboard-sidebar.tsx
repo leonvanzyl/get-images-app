@@ -54,11 +54,6 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-// Mocked monthly usage — Wave 3 will replace this with derived state from the
-// shared mock-data module if/when a generate page wires actual counters.
-const MOCK_RUNS_USED = 47;
-const MOCK_RUNS_QUOTA = 500;
-
 function isActiveRoute(pathname: string, href: string): boolean {
   if (href === "/dashboard") {
     // Don't match nested /dashboard/* on the Generate link.
@@ -73,9 +68,11 @@ function userInitial(user: DashboardUser): string {
 
 export function DashboardSidebar({
   user,
+  creditBalance,
   onNavigate,
 }: {
   user: DashboardUser;
+  creditBalance: number;
   /** Called after a nav item is clicked — used by the mobile sheet to close. */
   onNavigate?: () => void;
 }) {
@@ -84,10 +81,6 @@ export function DashboardSidebar({
   // Normalize the optional callback to a stable handler so React/Next.js
   // typings stay happy under `exactOptionalPropertyTypes`.
   const handleNavigate = onNavigate ?? (() => {});
-  const usagePercent = Math.min(
-    100,
-    Math.round((MOCK_RUNS_USED / MOCK_RUNS_QUOTA) * 100),
-  );
 
   const handleSignOut = async () => {
     await signOut();
@@ -98,7 +91,7 @@ export function DashboardSidebar({
   return (
     <nav
       aria-label="Dashboard navigation"
-      className="flex h-full min-h-screen flex-col"
+      className="flex h-full flex-col"
     >
       <div className="px-6 pt-6 pb-8">
         <Link
@@ -181,27 +174,11 @@ export function DashboardSidebar({
 
       <div className="mx-3 mb-4 mt-6 rounded-sm border border-border/60 bg-background/40 p-4">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          Runs this month
+          Credits on reel
         </p>
         <p className="mt-2 font-mono text-2xl text-foreground tabular-nums">
-          {String(MOCK_RUNS_USED).padStart(3, "0")}{" "}
-          <span className="text-muted-foreground/60">
-            / {MOCK_RUNS_QUOTA}
-          </span>
+          {String(creditBalance).padStart(3, "0")}
         </p>
-        <div
-          className="mt-3 h-1 w-full overflow-hidden bg-border"
-          role="progressbar"
-          aria-valuenow={MOCK_RUNS_USED}
-          aria-valuemin={0}
-          aria-valuemax={MOCK_RUNS_QUOTA}
-          aria-label="Monthly run quota"
-        >
-          <div
-            className="h-full bg-primary"
-            style={{ width: `${usagePercent}%` }}
-          />
-        </div>
       </div>
 
       <div className="border-t border-border px-3 py-3">
