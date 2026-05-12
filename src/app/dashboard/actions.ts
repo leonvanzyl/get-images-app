@@ -12,7 +12,7 @@ import {
   type GenerateImageResult,
   type ImageModelDefinition,
 } from "@/services/image-generation";
-import { ImageGenerationError } from "@/services/image-generation/errors";
+
 
 const generateInputSchema = z.object({
   prompt: z.string().min(1).max(2000),
@@ -56,13 +56,9 @@ export async function generateImageAction(
     });
     return { success: true, data: result };
   } catch (error) {
-    if (error instanceof ImageGenerationError) {
-      return { success: false, error: error.message };
-    }
-    return {
-      success: false,
-      error: "An unexpected error occurred during image generation.",
-    };
+    const message =
+      error instanceof Error ? error.message : String(error);
+    return { success: false, error: message };
   }
 }
 
