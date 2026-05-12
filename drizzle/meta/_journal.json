@@ -29,6 +29,13 @@
       "when": 1778583098269,
       "tag": "0003_lazy_darwin",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778588700833,
+      "tag": "0004_brave_northstar",
+      "breakpoints": true
     }
   ]
 }

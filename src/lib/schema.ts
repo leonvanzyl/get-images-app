@@ -96,6 +96,7 @@ export const generation = pgTable(
     seed: integer("seed"),
     imageUrl: text("image_url").notNull(),
     mediaType: text("media_type").notNull(),
+    creditCost: integer("credit_cost"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
@@ -139,5 +140,23 @@ export const creditTransaction = pgTable(
     index("credit_transaction_user_id_idx").on(table.userId),
     index("credit_transaction_created_at_idx").on(table.createdAt),
     index("credit_transaction_type_idx").on(table.type),
+  ]
+);
+
+export const modelPricing = pgTable(
+  "model_pricing",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    modelId: text("model_id").notNull(),
+    creditCost: integer("credit_cost").notNull(),
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("model_pricing_model_id_idx").on(table.modelId),
   ]
 );

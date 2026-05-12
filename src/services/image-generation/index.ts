@@ -65,6 +65,7 @@ export async function generate(
     seed: input.seed ?? null,
     imageUrl: url,
     mediaType: generatedFile.mediaType ?? "image/png",
+    creditCost: input.creditCost ?? null,
     createdAt: now,
   }).returning({ id: generation.id });
 

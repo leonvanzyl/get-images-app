@@ -1,6 +1,9 @@
+import { polar, checkout, webhooks } from "@polar-sh/better-auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { addCredits } from "@/services/credits"
 import { db } from "./db"
+import { CREDIT_PACKS, getProductCredits, polarClient } from "./polar"
 
 const baseURL =
   process.env.BETTER_AUTH_URL ??
@@ -41,4 +44,39 @@ export const auth = betterAuth({
       }
     },
   },
+  plugins: [
+    polar({
+      client: polarClient,
+      createCustomerOnSignUp: true,
+      use: [
+        checkout({
+          products: CREDIT_PACKS.map((p) => ({ productId: p.productId, slug: p.slug })),
+          successUrl: "/dashboard",
+          authenticatedUsersOnly: true,
+        }),
+        webhooks({
+          secret: process.env.POLAR_WEBHOOK_SECRET!,
+          onOrderPaid: async (payload) => {
+            const userId = payload.data.customer.externalId
+            if (!userId) {
+              console.error("Polar webhook: missing externalId on customer")
+              return
+            }
+            const productId = payload.data.product?.id
+            if (!productId) {
+              console.error("Polar webhook: missing product on order")
+              return
+            }
+            const credits = getProductCredits(productId)
+            if (!credits) {
+              console.error(`Polar webhook: unknown product ${productId}`)
+              return
+            }
+            const orderId = payload.data.id
+            await addCredits(userId, credits, `Purchased ${credits} credits (Order ${orderId})`, orderId)
+          },
+        }),
+      ],
+    }),
+  ],
 })

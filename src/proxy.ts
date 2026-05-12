@@ -13,6 +13,11 @@ const authLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
  */
 export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/api/auth")) {
+    // Polar webhooks are server-to-server and verified by signature — skip rate limiting
+    if (request.nextUrl.pathname === "/api/auth/polar/webhooks") {
+      return NextResponse.next();
+    }
+
     const ip =
       request.headers.get("x-forwarded-for") ??
       request.headers.get("x-real-ip") ??

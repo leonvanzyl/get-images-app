@@ -15,6 +15,7 @@ export type GenerateImageInput = {
   style?: string;
   seed?: number;
   userId: string;
+  creditCost?: number;
 };
 
 export type GeneratedImage = {

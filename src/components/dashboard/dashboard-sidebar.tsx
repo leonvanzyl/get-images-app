@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronUp,
+  CreditCard,
   KeyRound,
   Library,
   LogOut,
@@ -52,12 +53,15 @@ const NAV_ITEMS: NavItem[] = [
     frame: "04",
     icon: Plug,
   },
+  { href: "/pricing", label: "Buy Credits", frame: "05", icon: CreditCard },
 ];
 
 function isActiveRoute(pathname: string, href: string): boolean {
   if (href === "/dashboard") {
-    // Don't match nested /dashboard/* on the Generate link.
     return pathname === "/dashboard";
+  }
+  if (href === "/pricing") {
+    return pathname === "/pricing";
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -172,14 +176,21 @@ export function DashboardSidebar({
         })}
       </ul>
 
-      <div className="mx-3 mb-4 mt-6 rounded-sm border border-border/60 bg-background/40 p-4">
+      <Link
+        href="/pricing"
+        onClick={handleNavigate}
+        className="mx-3 mb-4 mt-6 block rounded-sm border border-border/60 bg-background/40 p-4 transition-colors hover:border-primary/60"
+      >
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
           Credits on reel
         </p>
         <p className="mt-2 font-mono text-2xl text-foreground tabular-nums">
           {String(creditBalance).padStart(3, "0")}
         </p>
-      </div>
+        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+          Buy more →
+        </p>
+      </Link>
 
       <div className="border-t border-border px-3 py-3">
         <DropdownMenu>

@@ -10,6 +10,8 @@ import { createRateLimiter } from "@/lib/rate-limit";
 import { generation } from "@/lib/schema";
 import {
   getBalance,
+  getModelCreditCost,
+  getAllModelPricing,
   deductCredit,
   refundCredit,
   InsufficientCreditsError,
@@ -62,26 +64,27 @@ export async function generateImageAction(
     };
   }
 
-  try {
-    const { prompt, modelId, aspectRatio, style, seed } = parsed.data;
+  const { prompt, modelId, aspectRatio, style, seed } = parsed.data;
+  const creditCost = await getModelCreditCost(modelId);
 
-    // Fast pre-check — no lock, just bail early if balance is clearly zero
+  try {
+    // Fast pre-check — no lock, just bail early if balance is too low
     const balance = await getBalance(session.user.id);
-    if (balance < 1) {
+    if (balance < creditCost) {
       return {
         success: false,
-        error:
-          "No credits remaining on this reel. Add credits to resume production.",
+        error: `Not enough credits. This model requires ${creditCost} credits per generation.`,
       };
     }
 
     // Authoritative transactional deduction (row-level lock)
-    await deductCredit(session.user.id);
+    await deductCredit(session.user.id, creditCost);
 
     const result = await generate({
       prompt,
       modelId,
       userId: session.user.id,
+      creditCost,
       ...(aspectRatio !== undefined ? { aspectRatio } : {}),
       ...(style !== undefined ? { style } : {}),
       ...(seed !== undefined ? { seed } : {}),
@@ -95,7 +98,8 @@ export async function generateImageAction(
     if (!(error instanceof InsufficientCreditsError)) {
       await refundCredit(
         session.user.id,
-        "Generation failed — credit refunded",
+        creditCost,
+        "Generation failed — credits refunded",
       );
     }
 
@@ -150,6 +154,11 @@ export async function getCreditBalanceAction(): Promise<number> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return 0;
   return getBalance(session.user.id);
+}
+
+export async function getModelPricingAction(): Promise<Record<string, number>> {
+  const pricing = await getAllModelPricing();
+  return Object.fromEntries(pricing.map((p) => [p.modelId, p.creditCost]));
 }
 
 export async function deleteGenerationAction(

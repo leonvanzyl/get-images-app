@@ -19,6 +19,7 @@ import {
 import {
   generateImageAction,
   getAvailableModelsAction,
+  getModelPricingAction,
 } from "./actions";
 
 const HISTORY_LIMIT = 8;
@@ -41,6 +42,7 @@ export default function DashboardGeneratePage() {
   const [models, setModels] = useState<GenerateModel[]>([]);
   const [model, setModel] = useState<GenerateModel | null>(null);
   const [seed, setSeed] = useState(4719);
+  const [pricing, setPricing] = useState<Record<string, number>>({});
   const [state, setState] = useState<ResultStageState>("empty");
   const [result, setResult] = useState<RecentImage | null>(null);
   const [history, setHistory] = useState<RecentImage[]>([]);
@@ -54,6 +56,10 @@ export default function DashboardGeneratePage() {
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    getModelPricingAction().then(setPricing);
   }, []);
 
   useEffect(() => {
@@ -209,6 +215,7 @@ export default function DashboardGeneratePage() {
             setSeed={setSeed}
             disabled={isGenerating}
             models={models}
+            pricing={pricing}
           />
           <RecentStrip items={history} current={result} onSelect={handleSelectRecent} />
         </div>

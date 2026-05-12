@@ -12,6 +12,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "Generate", href: "/dashboard" },
       { label: "Library", href: "/dashboard/library" },
       { label: "API", href: "/dashboard/keys" },
+      { label: "Pricing", href: "/pricing" },
     ],
   },
   {

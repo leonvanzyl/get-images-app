@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { href: "/#manifesto", label: "Manifesto" },
   { href: "/#examples", label: "Examples" },
   { href: "/#developers", label: "Developers" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export function SiteHeader() {

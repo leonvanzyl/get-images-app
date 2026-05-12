@@ -40,6 +40,7 @@ type SettingsPanelProps = {
   setSeed: (next: number) => void;
   disabled?: boolean;
   models: ImageModelDefinition[];
+  pricing?: Record<string, number>;
 };
 
 const LABEL_CLASS =
@@ -62,6 +63,7 @@ export function SettingsPanel({
   setSeed,
   disabled = false,
   models,
+  pricing,
 }: SettingsPanelProps) {
   const handleModelChange = (id: string) => {
     const next = models.find((entry) => entry.id === id);
@@ -212,6 +214,11 @@ export function SettingsPanel({
                       className="font-mono text-xs uppercase tracking-[0.14em]"
                     >
                       {option.name}
+                      {pricing?.[option.id] != null && (
+                        <span className="ml-1 text-muted-foreground">
+                          · {pricing[option.id]} cr
+                        </span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -220,6 +227,7 @@ export function SettingsPanel({
           </Select>
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/80">
             {model.description}
+            {pricing?.[model.id] != null && ` · ${pricing[model.id]} credits per image`}
           </p>
         </fieldset>
 
