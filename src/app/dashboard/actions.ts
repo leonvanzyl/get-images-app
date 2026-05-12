@@ -6,6 +6,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { createRateLimiter } from "@/lib/rate-limit";
 import { generation } from "@/lib/schema";
 import {
   getBalance,
@@ -20,6 +21,8 @@ import {
   type ImageModelDefinition,
 } from "@/services/image-generation";
 
+
+const generateLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 
 const generateInputSchema = z.object({
   prompt: z.string().min(1).max(2000),
@@ -39,6 +42,14 @@ export async function generateImageAction(
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return { success: false, error: "You must be signed in to generate images." };
+  }
+
+  const { success: withinLimit } = generateLimiter.check(session.user.id);
+  if (!withinLimit) {
+    return {
+      success: false,
+      error: "Too many requests. Please wait before generating again.",
+    };
   }
 
   const parsed = generateInputSchema.safeParse(input);

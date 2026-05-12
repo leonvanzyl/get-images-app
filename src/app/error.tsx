@@ -27,7 +27,7 @@ export default function Error({
           An unexpected error occurred. Please try again or contact support if
           the problem persists.
         </p>
-        {error.digest && (
+        {process.env.NODE_ENV === "development" && error.digest && (
           <p className="text-xs text-muted-foreground mb-4">
             Error ID: {error.digest}
           </p>
