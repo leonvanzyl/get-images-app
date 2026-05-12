@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Copy, Download, Sparkles, Star, Trash2, X } from "lucide-react";
+import type { LibraryImage } from "@/app/dashboard/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +11,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { type AspectRatio, type MockImage } from "@/lib/mock-data";
+import type { AspectRatio } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 const ASPECT_CLASS: Record<AspectRatio, string> = {
@@ -20,6 +21,14 @@ const ASPECT_CLASS: Record<AspectRatio, string> = {
   "2:3": "aspect-[2/3]",
   "4:5": "aspect-[4/5]",
 };
+
+function getAspectClass(aspect: string): string {
+  return ASPECT_CLASS[aspect as AspectRatio] ?? "aspect-square";
+}
+
+function shortId(id: string): string {
+  return id.slice(0, 8);
+}
 
 function formatCreated(iso: string): string {
   const date = new Date(iso);
@@ -37,15 +46,15 @@ function formatCreated(iso: string): string {
 }
 
 type ImageLightboxProps = {
-  image: MockImage | null;
+  image: LibraryImage | null;
   totalCount: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onToggleFavorite: (image: MockImage) => void;
-  onDelete: (image: MockImage) => void;
-  onDownload: (image: MockImage) => void;
-  onCopyPrompt: (image: MockImage) => void;
-  onRegenerate: (image: MockImage) => void;
+  onToggleFavorite: (image: LibraryImage) => void;
+  onDelete: (image: LibraryImage) => void;
+  onDownload: (image: LibraryImage) => void;
+  onCopyPrompt: (image: LibraryImage) => void;
+  onRegenerate: (image: LibraryImage) => void;
 };
 
 export function ImageLightbox({
@@ -82,7 +91,7 @@ export function ImageLightbox({
 
   if (!image) return null;
 
-  const frameLabel = `${image.id} / ${String(totalCount).padStart(3, "0")}`;
+  const frameLabel = `${shortId(image.id)} / ${String(totalCount).padStart(3, "0")}`;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -94,7 +103,7 @@ export function ImageLightbox({
           "sm:max-w-6xl",
         )}
       >
-        <DialogTitle className="sr-only">{`Frame ${image.id} — ${image.prompt}`}</DialogTitle>
+        <DialogTitle className="sr-only">{`Frame ${shortId(image.id)} — ${image.prompt}`}</DialogTitle>
         <DialogDescription className="sr-only">
           Full metadata, actions, and a large preview for this generated frame.
         </DialogDescription>
@@ -105,7 +114,7 @@ export function ImageLightbox({
             <div
               className={cn(
                 "relative w-full overflow-hidden border border-border/60 bg-background/40",
-                ASPECT_CLASS[image.aspect],
+                getAspectClass(image.aspect),
               )}
             >
               <Image
@@ -153,17 +162,6 @@ export function ImageLightbox({
                     {image.prompt}
                   </span>
                 </MetaRow>
-                <MetaRow label="Negative">
-                  {image.negativePrompt ? (
-                    <span className="text-foreground/85">
-                      {image.negativePrompt}
-                    </span>
-                  ) : (
-                    <span className="font-mono text-muted-foreground/60">
-                      —
-                    </span>
-                  )}
-                </MetaRow>
                 <MetaRow label="Model">
                   <span className="font-mono text-foreground">
                     {image.model}
@@ -196,7 +194,7 @@ export function ImageLightbox({
               {confirmDelete ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="mr-auto font-mono text-[10px] uppercase tracking-[0.18em] text-destructive">
-                    Delete frame {image.id}?
+                    Delete frame {shortId(image.id)}?
                   </p>
                   <Button
                     type="button"

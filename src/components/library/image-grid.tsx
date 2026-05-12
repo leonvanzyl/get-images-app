@@ -1,13 +1,13 @@
 "use client";
 
+import type { LibraryImage } from "@/app/dashboard/actions";
 import { Button } from "@/components/ui/button";
-import type { MockImage } from "@/lib/mock-data";
 import { ImageCard } from "./image-card";
 
 type ImageGridProps = {
-  images: MockImage[];
+  images: LibraryImage[];
   totalCount: number;
-  onOpen: (image: MockImage) => void;
+  onOpen: (image: LibraryImage) => void;
   onClearFilters: () => void;
 };
 

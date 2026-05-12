@@ -1,13 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { aspectDimensions, type MockImage } from "@/lib/mock-data";
+import { aspectDimensions, type AspectRatio } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
+type RecentImage = {
+  id: string;
+  url: string;
+  prompt: string;
+  aspect: string;
+};
+
 type RecentStripProps = {
-  items: MockImage[];
-  current: MockImage | null;
-  onSelect: (image: MockImage) => void;
+  items: RecentImage[];
+  current: RecentImage | null;
+  onSelect: (image: RecentImage) => void;
 };
 
 const LABEL_CLASS =
@@ -48,7 +55,7 @@ export function RecentStrip({ items, current, onSelect }: RecentStripProps) {
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
         {items.map((image) => {
           const selected = current?.id === image.id;
-          const dims = aspectDimensions(image.aspect);
+          const dims = aspectDimensions(image.aspect as AspectRatio);
           return (
             <button
               key={image.id}

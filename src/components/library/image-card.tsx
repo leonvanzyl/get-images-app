@@ -3,7 +3,8 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
-import type { AspectRatio, MockImage } from "@/lib/mock-data";
+import type { LibraryImage } from "@/app/dashboard/actions";
+import type { AspectRatio } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 const ASPECT_STYLE: Record<AspectRatio, CSSProperties> = {
@@ -14,26 +15,34 @@ const ASPECT_STYLE: Record<AspectRatio, CSSProperties> = {
   "4:5": { aspectRatio: "4 / 5" },
 };
 
+function getAspectStyle(aspect: string): CSSProperties {
+  return ASPECT_STYLE[aspect as AspectRatio] ?? { aspectRatio: "1 / 1" };
+}
+
 function truncatePrompt(prompt: string, max = 60): string {
   if (prompt.length <= max) return prompt;
   return `${prompt.slice(0, max).trimEnd()}…`;
 }
 
+function shortId(id: string): string {
+  return id.slice(0, 8);
+}
+
 type ImageCardProps = {
-  image: MockImage;
+  image: LibraryImage;
   index: number;
   total: number;
-  onOpen: (image: MockImage) => void;
+  onOpen: (image: LibraryImage) => void;
 };
 
 export function ImageCard({ image, index, total, onOpen }: ImageCardProps) {
-  const frameLabel = `${image.id} / ${String(total).padStart(3, "0")}`;
+  const frameLabel = `${shortId(image.id)} / ${String(total).padStart(3, "0")}`;
 
   return (
     <button
       type="button"
       onClick={() => onOpen(image)}
-      aria-label={`Open frame ${image.id}: ${image.prompt}`}
+      aria-label={`Open frame ${shortId(image.id)}: ${image.prompt}`}
       style={{
         animationDelay: `${index * 30}ms`,
         animationFillMode: "both",
@@ -44,7 +53,7 @@ export function ImageCard({ image, index, total, onOpen }: ImageCardProps) {
         "animate-fade-up opacity-0",
       )}
     >
-      <div className="relative w-full" style={ASPECT_STYLE[image.aspect]}>
+      <div className="relative w-full" style={getAspectStyle(image.aspect)}>
         <Image
           src={image.url}
           alt={image.prompt}

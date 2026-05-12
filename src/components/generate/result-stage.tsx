@@ -7,10 +7,15 @@ import { toast } from "sonner";
 import {
   aspectDimensions,
   type AspectRatio,
-  type MockImage,
   type StylePreset,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+
+type GeneratedImageDisplay = {
+  id: string;
+  url: string;
+  prompt: string;
+};
 
 type ResultModel = { id: string; name: string };
 
@@ -18,7 +23,7 @@ export type ResultStageState = "empty" | "generating" | "result";
 
 type ResultStageProps = {
   state: ResultStageState;
-  result: MockImage | null;
+  result: GeneratedImageDisplay | null;
   prompt: string;
   aspect: AspectRatio;
   style: StylePreset;
@@ -209,7 +214,7 @@ export function ResultStage({
                     Copy prompt
                   </ActionButton>
                 </div>
-                <DownloadAction />
+                <DownloadAction url={result.url} />
               </div>
             </>
           )}
@@ -270,15 +275,29 @@ function ActionButton({
   );
 }
 
-/**
- * "Download" is a UI mock — we just fire a toast. The page never persists
- * anything, so there's no real file to save.
- */
-function DownloadAction() {
+function DownloadAction({ url }: { url: string }) {
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `generated-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success("Download started");
+    } catch {
+      toast.error("Download failed");
+    }
+  };
+
   return (
     <button
       type="button"
-      onClick={() => toast.success("Saved locally")}
+      onClick={handleDownload}
       className={cn(
         "inline-flex items-center gap-1.5 border border-primary/50 px-2 py-1",
         "font-mono text-[10px] uppercase tracking-[0.18em] text-primary",

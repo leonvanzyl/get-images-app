@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -17,15 +19,15 @@ import {
 } from "@/components/ui/tooltip";
 import {
   ASPECT_RATIOS,
-  MOCK_MODELS,
   STYLE_PRESETS,
   aspectDimensions,
   type AspectRatio,
   type StylePreset,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import type { ImageModelDefinition } from "@/services/image-generation";
 
-export type GenerateModel = (typeof MOCK_MODELS)[number];
+export type GenerateModel = ImageModelDefinition;
 
 type SettingsPanelProps = {
   aspect: AspectRatio;
@@ -37,6 +39,7 @@ type SettingsPanelProps = {
   seed: number;
   setSeed: (next: number) => void;
   disabled?: boolean;
+  models: ImageModelDefinition[];
 };
 
 const LABEL_CLASS =
@@ -58,9 +61,10 @@ export function SettingsPanel({
   seed,
   setSeed,
   disabled = false,
+  models,
 }: SettingsPanelProps) {
   const handleModelChange = (id: string) => {
-    const next = MOCK_MODELS.find((entry) => entry.id === id);
+    const next = models.find((entry) => entry.id === id);
     if (next) {
       setModel(next);
     }
@@ -187,14 +191,30 @@ export function SettingsPanel({
               position="popper"
               className="rounded-none"
             >
-              {MOCK_MODELS.map((option) => (
-                <SelectItem
-                  key={option.id}
-                  value={option.id}
-                  className="font-mono text-xs uppercase tracking-[0.14em]"
-                >
-                  {option.name}
-                </SelectItem>
+              {Object.entries(
+                models.reduce<Record<string, ImageModelDefinition[]>>(
+                  (acc, m) => {
+                    const key = m.providerId.toUpperCase();
+                    (acc[key] ??= []).push(m);
+                    return acc;
+                  },
+                  {},
+                ),
+              ).map(([provider, group]) => (
+                <SelectGroup key={provider}>
+                  <SelectLabel className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                    {provider}
+                  </SelectLabel>
+                  {group.map((option) => (
+                    <SelectItem
+                      key={option.id}
+                      value={option.id}
+                      className="font-mono text-xs uppercase tracking-[0.14em]"
+                    >
+                      {option.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               ))}
             </SelectContent>
           </Select>

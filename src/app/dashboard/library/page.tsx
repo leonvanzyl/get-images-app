@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ImageGrid } from "@/components/library/image-grid";
 import { ImageLightbox } from "@/components/library/image-lightbox";
@@ -10,17 +10,29 @@ import {
   type SortOrder,
   type StyleFilter,
 } from "@/components/library/library-filters";
-import { MOCK_IMAGES, type MockImage } from "@/lib/mock-data";
+import {
+  type LibraryImage,
+  getLibraryImagesAction,
+  deleteGenerationAction,
+} from "../actions";
 
 export default function LibraryPage() {
-  const [items, setItems] = useState<MockImage[]>(MOCK_IMAGES);
+  const [items, setItems] = useState<LibraryImage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [aspect, setAspect] = useState<AspectFilter>("All");
   const [style, setStyle] = useState<StyleFilter>("All");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [sort, setSort] = useState<SortOrder>("newest");
-  const [selected, setSelected] = useState<MockImage | null>(null);
+  const [selected, setSelected] = useState<LibraryImage | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    getLibraryImagesAction().then((images) => {
+      setItems(images);
+      setLoading(false);
+    });
+  }, []);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -61,12 +73,12 @@ export default function LibraryPage() {
     setFavoritesOnly(false);
   }, []);
 
-  const handleOpen = useCallback((image: MockImage) => {
+  const handleOpen = useCallback((image: LibraryImage) => {
     setSelected(image);
     setLightboxOpen(true);
   }, []);
 
-  const handleToggleFavorite = useCallback((image: MockImage) => {
+  const handleToggleFavorite = useCallback((image: LibraryImage) => {
     const willFavorite = !image.favorite;
     setItems((prev) =>
       prev.map((item) =>
@@ -78,22 +90,41 @@ export default function LibraryPage() {
     );
     toast.success(
       willFavorite
-        ? `Frame ${image.id} added to favorites`
-        : `Frame ${image.id} removed from favorites`,
+        ? `Frame ${image.id.slice(0, 8)} added to favorites`
+        : `Frame ${image.id.slice(0, 8)} removed from favorites`,
     );
   }, []);
 
-  const handleDelete = useCallback((image: MockImage) => {
-    setItems((prev) => prev.filter((item) => item.id !== image.id));
-    setLightboxOpen(false);
-    toast.success(`Frame ${image.id} deleted`);
+  const handleDelete = useCallback(async (image: LibraryImage) => {
+    const result = await deleteGenerationAction(image.id);
+    if (result.success) {
+      setItems((prev) => prev.filter((item) => item.id !== image.id));
+      setLightboxOpen(false);
+      toast.success(`Frame deleted`);
+    } else {
+      toast.error(result.error ?? "Failed to delete");
+    }
   }, []);
 
-  const handleDownload = useCallback((image: MockImage) => {
-    toast.success(`Frame ${image.id} — saved locally`);
+  const handleDownload = useCallback(async (image: LibraryImage) => {
+    try {
+      const response = await fetch(image.url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `generated-${image.id.slice(0, 8)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success("Download started");
+    } catch {
+      toast.error("Download failed");
+    }
   }, []);
 
-  const handleCopyPrompt = useCallback(async (image: MockImage) => {
+  const handleCopyPrompt = useCallback(async (image: LibraryImage) => {
     try {
       if (
         typeof navigator !== "undefined" &&
@@ -109,9 +140,27 @@ export default function LibraryPage() {
     }
   }, []);
 
-  const handleRegenerate = useCallback((image: MockImage) => {
-    toast.success(`Frame ${image.id} — sent to Generate`);
+  const handleRegenerate = useCallback((_image: LibraryImage) => {
+    toast.success("Sent to Generate — switch to the Generate tab to continue.");
   }, []);
+
+  if (loading) {
+    return (
+      <section className="p-8">
+        <header className="flex flex-col gap-3 border-l border-primary/40 pl-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            02 — Library
+          </p>
+          <h1 className="font-[family-name:var(--font-display)] text-5xl font-semibold leading-[1.02] tracking-tight text-balance text-foreground md:text-6xl">
+            Your reel.
+          </h1>
+        </header>
+        <div className="mt-12 flex justify-center">
+          <div className="film-progress h-1 w-48 border border-primary/30 opacity-80" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="p-8">
