@@ -156,6 +156,7 @@ export async function upload(
     const pathname = folder ? `${folder}/${sanitizedFilename}` : sanitizedFilename;
     const blob = await put(pathname, buffer, {
       access: "private",
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
     return {

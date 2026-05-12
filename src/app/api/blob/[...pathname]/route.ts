@@ -13,7 +13,10 @@ export async function GET(
   }
 
   try {
-    const result = await get(blobPath, { access: "private" });
+    const result = await get(blobPath, {
+      access: "private",
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
+    });
 
     if (!result) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
