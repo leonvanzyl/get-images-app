@@ -49,4 +49,8 @@ next-env.d.ts
 # uploads
 public/uploads
 
+# python build artifacts (skill scripts ship as .py source)
+__pycache__/
+*.pyc
+
 nul
