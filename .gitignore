@@ -2,6 +2,7 @@
 
 .playwright-cli
 audit/
+.mcp.json
 
 # dependencies
 /node_modules

@@ -26,12 +26,20 @@ export default async function IntegrationsPage() {
             Hook your AI agents into Get Images via MCP.
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/docs/api">
-            <BookOpenText className="size-4" />
-            Read API docs
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href="/docs/mcp">
+              <BookOpenText className="size-4" />
+              Read MCP docs
+            </Link>
+          </Button>
+          <Button asChild variant="ghost">
+            <Link href="/docs/api">
+              <BookOpenText className="size-4" />
+              REST API docs
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <div className="space-y-8">

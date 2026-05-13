@@ -74,6 +74,12 @@ async function copyToClipboard(value: string, label: string): Promise<boolean> {
   }
 }
 
+// The display value carries U+2022 bullets to indicate the hidden suffix.
+// The full key is hashed at creation — only the visible prefix can be copied.
+function keyPrefixFromDisplay(displayKey: string): string {
+  return displayKey.replace(/•+/g, "");
+}
+
 function StatusBadge({ status }: { status: ApiKeyView["status"] }) {
   if (status === "active") {
     return (
@@ -97,9 +103,10 @@ function StatusBadge({ status }: { status: ApiKeyView["status"] }) {
 
 function CopyDisplayKeyButton({ displayKey }: { displayKey: string }) {
   const [copied, setCopied] = useState(false);
+  const prefix = keyPrefixFromDisplay(displayKey);
 
   async function handleCopy() {
-    const ok = await copyToClipboard(displayKey, "Key identifier copied");
+    const ok = await copyToClipboard(prefix, "Key prefix copied");
     if (ok) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
@@ -112,7 +119,8 @@ function CopyDisplayKeyButton({ displayKey }: { displayKey: string }) {
       variant="ghost"
       size="icon"
       onClick={handleCopy}
-      aria-label={`Copy key identifier ${displayKey}`}
+      aria-label={`Copy key prefix ${prefix}`}
+      title="Copy key prefix (full key is only shown when created)"
       className="text-muted-foreground hover:text-foreground size-7"
     >
       {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
@@ -121,8 +129,8 @@ function CopyDisplayKeyButton({ displayKey }: { displayKey: string }) {
 }
 
 export function KeyTable({ items, onRevoke, onDelete }: Props) {
-  async function handleCopyIdentifier(key: ApiKeyView) {
-    await copyToClipboard(key.displayKey, "Key identifier copied");
+  async function handleCopyPrefix(key: ApiKeyView) {
+    await copyToClipboard(keyPrefixFromDisplay(key.displayKey), "Key prefix copied");
   }
 
   return (
@@ -197,9 +205,9 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem onClick={() => handleCopyIdentifier(key)}>
+                      <DropdownMenuItem onClick={() => handleCopyPrefix(key)}>
                         <Copy className="size-3.5" />
-                        Copy identifier
+                        Copy prefix
                       </DropdownMenuItem>
                       {!revoked && (
                         <>

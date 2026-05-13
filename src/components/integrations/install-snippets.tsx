@@ -1,12 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CopyCodeBlock } from "./copy-code-block";
 
 /**
  * Per-client install recipes. The snippet shape is the same across all three
- * clients — a top-level `mcp` block with a remote server entry — so each tab
- * only differs in its description and filename hint.
+ * clients — a top-level `mcpServers` block with a streamable-HTTP server entry
+ * authed by an `Authorization: Bearer` header — so each tab only differs in
+ * its description and filename hint.
  */
 type SnippetConfig = {
   id: string;
@@ -17,15 +19,13 @@ type SnippetConfig = {
 };
 
 const REMOTE_MCP_BLOCK = `{
-  "mcp": {
+  "mcpServers": {
     "get-images": {
-      "type": "remote",
-      "url": "https://mcp.get-images.dev/mcp",
+      "type": "http",
+      "url": "https://getimages.dev/api/mcp",
       "headers": {
-        "GET_IMAGES_API_KEY": "{KEY}",
-        "GET_IMAGES_MODEL": "openai/gpt-image-2"
-      },
-      "enabled": true
+        "Authorization": "Bearer {KEY}"
+      }
     }
   }
 }`;
@@ -36,7 +36,7 @@ const SNIPPETS: SnippetConfig[] = [
     label: "Claude Desktop",
     filename: "claude_desktop_config.json",
     description:
-      "Add this to your Claude Desktop config and restart the app. macOS: ~/Library/Application Support/Claude/claude_desktop_config.json · Windows: %APPDATA%\\Claude\\claude_desktop_config.json",
+      "Add this to your Claude Desktop config and restart the app. macOS: ~/Library/Application Support/Claude/claude_desktop_config.json · Windows: %APPDATA%\\Claude\\claude_desktop_config.json. The full setup guide — including other clients — lives in the MCP docs.",
     template: REMOTE_MCP_BLOCK,
   },
   {
@@ -50,9 +50,9 @@ const SNIPPETS: SnippetConfig[] = [
   {
     id: "vscode",
     label: "VS Code",
-    filename: ".continue/config.json",
+    filename: ".vscode/mcp.json",
     description:
-      "Drop this into your VS Code MCP config (Continue or similar). The shape is the same — type, url, headers, enabled.",
+      "Drop this into your VS Code MCP config. The shape is the same across clients — a streamable-HTTP server entry under mcpServers with an Authorization Bearer header.",
     template: REMOTE_MCP_BLOCK,
   },
 ];
@@ -96,6 +96,17 @@ export function InstallSnippets({ apiKey }: InstallSnippetsProps) {
           );
         })}
       </Tabs>
+
+      <p className="text-muted-foreground text-xs">
+        Using a different client?{" "}
+        <Link
+          href="/docs/mcp"
+          className="text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
+        >
+          Read the full MCP setup guide
+        </Link>{" "}
+        for client-by-client instructions and the tool reference.
+      </p>
     </section>
   );
 }

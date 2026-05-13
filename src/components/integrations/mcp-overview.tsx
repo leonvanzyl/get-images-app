@@ -26,7 +26,7 @@ const FEATURES: Array<{
   {
     icon: Sparkles,
     title: "Pick a model per request",
-    body: "Set the GET_IMAGES_MODEL header to choose the image backend (e.g. openai/gpt-image-2, google/nano-banana-pro).",
+    body: "Pass a modelId argument on each getimages_generate_image call to choose the backend (e.g. openai/gpt-image-2, google/nano-banana-pro).",
   },
 ];
 

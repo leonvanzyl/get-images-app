@@ -1,0 +1,1 @@
+& 'c:\Projects\get-images-app\PROMPTS & RESOURCES\ARCHITECTURE.png' Let's proceed to work on our remote MCP server. Right, so for the MCP server, we will authenticate the user using an API key. We will not be using OAuth in this project. This MCP server should expose all the same capabilities that the REST API is exposing to AI agents. Use your mcp-builder skill.

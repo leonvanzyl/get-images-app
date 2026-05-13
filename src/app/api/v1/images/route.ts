@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
-import { count, desc, eq } from "drizzle-orm";
-import { generationMetadataSelection, toGenerationMetadata } from "@/app/api/v1/_lib/generations";
 import { authErrorHeaders, jsonError, parsePagination } from "@/app/api/v1/_lib/http";
 import { authenticateApiKey } from "@/lib/api-key-auth";
-import { db } from "@/lib/db";
-import { generation } from "@/lib/schema";
+import { listUserImages } from "@/services/images/queries";
 
 export const runtime = "nodejs";
 
@@ -21,20 +18,11 @@ export async function GET(request: Request) {
 
   const { limit, offset } = pagination.pagination;
 
-  const [rows, totalRows] = await Promise.all([
-    db
-      .select(generationMetadataSelection)
-      .from(generation)
-      .where(eq(generation.userId, auth.userId))
-      .orderBy(desc(generation.createdAt))
-      .limit(limit)
-      .offset(offset),
-    db.select({ total: count() }).from(generation).where(eq(generation.userId, auth.userId)),
-  ]);
+  const { images, total } = await listUserImages(auth.userId, { limit, offset });
 
   return NextResponse.json({
-    images: rows.map(toGenerationMetadata),
-    total: totalRows[0]?.total ?? 0,
+    images,
+    total,
     limit,
     offset,
   });
