@@ -9,9 +9,9 @@ import {
 import { CopyCodeBlock } from "./copy-code-block";
 
 /**
- * Per-client install recipes. Remote MCP block matches Context 7's shape
- * (type, url, headers, enabled under `mcp.<serverId>`). `{KEY}` is replaced
- * with the selected key prefix for copy.
+ * Per-client install recipes. The snippet shape is the same across all three
+ * clients — a top-level `mcp` block with a remote server entry — so each tab
+ * only differs in its description and filename hint.
  */
 type SnippetConfig = {
   id: string;
@@ -19,7 +19,6 @@ type SnippetConfig = {
   filename: string;
   description: string;
   template: string;
-  note: string;
 };
 
 const REMOTE_MCP_BLOCK = `{
@@ -29,7 +28,7 @@ const REMOTE_MCP_BLOCK = `{
       "url": "https://mcp.get-images.dev/mcp",
       "headers": {
         "GET_IMAGES_API_KEY": "{KEY}",
-        "GET_IMAGES_MODEL": "openai/image-2"
+        "GET_IMAGES_MODEL": "openai/gpt-image-2"
       },
       "enabled": true
     }
@@ -39,39 +38,27 @@ const REMOTE_MCP_BLOCK = `{
 const SNIPPETS: SnippetConfig[] = [
   {
     id: "claude",
-    label: "CLAUDE DESKTOP",
+    label: "Claude Desktop",
     filename: "claude_desktop_config.json",
     description:
-      "Same shape as Context 7: top-level mcp object with a remote server entry. Path — macOS: ~/Library/Application Support/Claude/claude_desktop_config.json · Windows: %APPDATA%\\Claude\\claude_desktop_config.json. Merge into existing mcp if you already use other servers.",
+      "Add this to your Claude Desktop config and restart the app. macOS: ~/Library/Application Support/Claude/claude_desktop_config.json · Windows: %APPDATA%\\Claude\\claude_desktop_config.json",
     template: REMOTE_MCP_BLOCK,
-    note: "Restart Claude Desktop. Swap GET_IMAGES_MODEL to google/nanobanana-pro when you want Google's image model.",
   },
   {
     id: "cursor",
-    label: "CURSOR",
+    label: "Cursor",
     filename: "mcp.json",
     description:
-      "Global ~/.cursor/mcp.json or project .cursor/mcp.json — match the remote MCP pattern your Cursor build expects (Context 7-style mcp map shown below).",
+      "Save this to ~/.cursor/mcp.json for global access, or .cursor/mcp.json inside a project. Reload MCP from the command palette afterwards.",
     template: REMOTE_MCP_BLOCK,
-    note: "Reload MCP from the command palette after saving.",
   },
   {
     id: "vscode",
-    label: "VS CODE / CONTINUE",
+    label: "VS Code",
     filename: ".continue/config.json",
     description:
-      "If your VS Code MCP / Continue setup merges a top-level mcp block, paste this fragment; otherwise map the same type, url, headers, and enabled fields into your client's remote-MCP format.",
+      "Drop this into your VS Code MCP config (Continue or similar). The shape is the same — type, url, headers, enabled.",
     template: REMOTE_MCP_BLOCK,
-    note: "GET_IMAGES_API_KEY is your Get Images API key. Model header picks the provider (openai/image-2 or google/nanobanana-pro).",
-  },
-  {
-    id: "generic",
-    label: "REFERENCE JSON",
-    filename: "get-images-mcp.json",
-    description:
-      "Portable reference: remote MCP server with API key and optional model in headers — parallel to Context 7's CONTEXT7_API_KEY pattern.",
-    template: REMOTE_MCP_BLOCK,
-    note: "Paste your real key in GET_IMAGES_API_KEY. Toggle enabled when you're ready.",
   },
 ];
 
@@ -86,32 +73,25 @@ export function InstallSnippets({ apiKey }: InstallSnippetsProps) {
   return (
     <section
       aria-labelledby="install-snippets-heading"
-      className="space-y-5"
+      className="space-y-4"
     >
-      <div className="space-y-2">
-        <p
+      <div className="space-y-1">
+        <h2
           id="install-snippets-heading"
-          className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary"
+          className="font-display text-lg font-medium"
         >
-          03 — INSTALL SNIPPETS
-        </p>
-        <p className="max-w-prose text-sm text-muted-foreground">
+          Install snippets
+        </h2>
+        <p className="text-sm text-muted-foreground">
           Paste the snippet for your client. The selected key is inlined for
           you — copy, save, restart, done.
         </p>
       </div>
 
-      <Tabs defaultValue={defaultTab} className="gap-0">
-        <TabsList
-          variant="line"
-          className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-border/60 p-0"
-        >
+      <Tabs defaultValue={defaultTab}>
+        <TabsList>
           {SNIPPETS.map((snippet) => (
-            <TabsTrigger
-              key={snippet.id}
-              value={snippet.id}
-              className="rounded-none px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] data-[state=active]:text-primary data-[state=active]:after:bg-primary"
-            >
+            <TabsTrigger key={snippet.id} value={snippet.id}>
               {snippet.label}
             </TabsTrigger>
           ))}
@@ -123,18 +103,12 @@ export function InstallSnippets({ apiKey }: InstallSnippetsProps) {
             <TabsContent
               key={snippet.id}
               value={snippet.id}
-              className="mt-6 space-y-3"
+              className="mt-4 space-y-3"
             >
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {snippet.description}
               </p>
               <CopyCodeBlock filename={snippet.filename} code={code} />
-              <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
-                <span aria-hidden="true" className="mr-1.5 text-primary">
-                  →
-                </span>
-                {snippet.note}
-              </p>
             </TabsContent>
           );
         })}

@@ -1,61 +1,81 @@
 # Get Images — Design System
 
-> **Neo-Cinema Dark** — A cinematic, film-production-inspired aesthetic. Dark mode is canonical; light mode exists as a paper-cream inversion. Every surface, label, and interaction is designed to evoke a film studio control room: grain overlays, scanlines, sprocket holes, bracket-frame hover states, and blinking cursor indicators.
+> **Open Studio** — A friendly, modern aesthetic built for vibe coders and AI agents.
+> Calm warm-cream canvas, one distinctive coral accent, soft serifs paired with a clean geometric sans.
+> The work is the hero. Chrome is quiet. Nothing flashes, blinks, or shouts.
 
 ---
 
 ## 1. Theme Identity
 
-**Name:** Neo-Cinema Dark
-**Default mode:** Dark (`:root` / `.dark`)
-**Light mode:** Paper-cream inversion (`.light`)
-**Managed by:** `next-themes` with `attribute="class"` and `defaultTheme="dark"`
+**Name:** Open Studio
+**Default mode:** Light (warm cream)
+**Dark mode:** Soft inversion (warm charcoal, not pure black)
+**Managed by:** `next-themes` with `attribute="class"` and `defaultTheme="light"`
 
 ### Personality
 
-- Film studio / post-production control room
-- Monospaced labels and frame numbers everywhere
-- Lime-green accent as the "live signal" color
-- Quiet, functional chrome — information density over decoration
-- Cinematic terminology: frames, plates, reels, seeds, runs
+- Calm, warm, modern — the opposite of a generic SaaS dashboard
+- Generous whitespace and rounded corners over dense chrome
+- One personality color (coral) used sparingly — not splashed everywhere
+- Sentence case, friendly microcopy ("What should we make?" not "COMPOSE PROMPT")
+- Function over decoration — every element earns its place
+
+### Design Anti-Patterns We Avoid
+
+- No grain overlays, scanlines, or film-strip motifs
+- No corner ticks, sprocket holes, or bracket frames
+- No uppercase monospace labels on every surface
+- No blinking "live" dots or rotating frame counters
+- No sharp `rounded-none` cards — soft corners throughout
+- No flashing animation chains on page load — entrance is calm
 
 ---
 
 ## 2. Color System
 
-All colors use **OKLCH** for perceptual uniformity. Tokens are defined as CSS custom properties on `:root` / `.dark` / `.light` in `globals.css` and mapped to Tailwind via `@theme inline`.
+All colors use **OKLCH**. Tokens are defined as CSS custom properties on `:root` / `.light` / `.dark` in `globals.css` and mapped to Tailwind via `@theme inline`.
 
-### Dark Mode (Canonical)
+### Light Mode (Canonical)
 
-| Token               | OKLCH Value              | Role                         |
-|----------------------|--------------------------|-------------------------------|
-| `--background`       | `oklch(0.09 0.008 240)` | Page background               |
-| `--foreground`       | `oklch(0.96 0 0)`       | Primary text                  |
-| `--card`             | `oklch(0.13 0.008 240)` | Card / panel surfaces         |
-| `--card-foreground`  | `oklch(0.96 0 0)`       | Card text                     |
-| `--primary`          | `oklch(0.9 0.22 130)`   | **Lime accent** — CTAs, active states, glow |
-| `--primary-foreground` | `oklch(0.12 0.02 130)` | Text on primary               |
-| `--secondary`        | `oklch(0.17 0.008 240)` | Secondary surfaces            |
-| `--muted`            | `oklch(0.16 0.008 240)` | Subdued surfaces              |
-| `--muted-foreground` | `oklch(0.62 0.01 240)`  | Secondary / label text        |
-| `--accent`           | `oklch(0.18 0.01 240)`  | Hover / focus highlight       |
-| `--destructive`      | `oklch(0.65 0.22 25)`   | Error / danger red            |
-| `--border`           | `oklch(0.22 0.008 240)` | Borders (usually at `/60` opacity) |
-| `--input`            | `oklch(0.18 0.008 240)` | Form input backgrounds        |
-| `--ring`             | `oklch(0.9 0.22 130)`   | Focus ring (lime)             |
-| `--sidebar`          | `oklch(0.11 0.008 240)` | Sidebar recess                |
+| Token                    | OKLCH Value                | Role                                |
+|--------------------------|----------------------------|-------------------------------------|
+| `--background`           | `oklch(0.985 0.008 80)`   | Warm cream page background          |
+| `--foreground`           | `oklch(0.22 0.015 60)`    | Espresso ink — primary text         |
+| `--card`                 | `oklch(1 0 0)`            | Pure white panel — pops slightly    |
+| `--card-foreground`      | `oklch(0.22 0.015 60)`    | Espresso ink                        |
+| `--primary`              | `oklch(0.7 0.17 35)`      | **Coral accent** — single hero color |
+| `--primary-foreground`   | `oklch(0.99 0.005 80)`    | Near-white on coral                 |
+| `--secondary`            | `oklch(0.95 0.012 80)`    | Softer cream panel                  |
+| `--secondary-foreground` | `oklch(0.22 0.015 60)`    | Espresso                            |
+| `--muted`                | `oklch(0.94 0.01 80)`     | Subdued surface                     |
+| `--muted-foreground`     | `oklch(0.48 0.012 60)`    | Secondary text                      |
+| `--accent`               | `oklch(0.93 0.015 80)`    | Hover / selected surface            |
+| `--destructive`          | `oklch(0.6 0.2 25)`       | Error red                           |
+| `--border`               | `oklch(0.9 0.01 80)`      | Hairline divider                    |
+| `--input`                | `oklch(1 0 0)`            | Input bg = white                    |
+| `--ring`                 | `oklch(0.7 0.17 35)`      | Coral focus ring                    |
 
-### Light Mode
+### Dark Mode (Warm Inversion)
 
-Light mode inverts to paper-cream (`oklch(0.97 0.01 90)`) and ink-black (`oklch(0.18 0.01 240)`). The lime accent deepens for legibility: `oklch(0.62 0.18 130)`.
+| Token                  | OKLCH Value                | Role                                |
+|------------------------|----------------------------|-------------------------------------|
+| `--background`         | `oklch(0.16 0.008 60)`    | Warm charcoal (not pure black)      |
+| `--foreground`         | `oklch(0.96 0.005 80)`    | Warm white                          |
+| `--card`               | `oklch(0.2 0.008 60)`     | Slightly raised panel               |
+| `--primary`            | `oklch(0.78 0.16 35)`     | Coral, lifted for contrast          |
+| `--muted-foreground`   | `oklch(0.7 0.008 60)`     | Soft warm gray                      |
+| `--border`             | `oklch(0.28 0.008 60)`    | Subtle divider                      |
 
 ### Chart Palette
 
-Five chart colors: lime, deep teal, amber, magenta, ice-blue — defined via `--chart-1` through `--chart-5`.
+Five chart colors warmed up: coral, sage, amber, plum, sky. Defined `--chart-1` through `--chart-5`.
 
-### Semantic Opacity
+### Opacity Conventions
 
-Borders typically use `/60` opacity (e.g., `border-border/60`). Text hierarchy uses `/80`, `/85`, `/90`, `/95` variants off `foreground`. Muted text at `/40`–`/70`.
+- Borders typically at full strength (`border-border`), not `/60`
+- Muted text uses `text-muted-foreground` — no `/40` shenanigans
+- The coral accent is **never** translucent on text — keep it solid
 
 ---
 
@@ -63,43 +83,38 @@ Borders typically use `/60` opacity (e.g., `border-border/60`). Text hierarchy u
 
 ### Font Stack
 
-| Slot      | Font                 | CSS Variable       | Usage                                  |
-|-----------|----------------------|---------------------|----------------------------------------|
-| Display   | Bricolage Grotesque  | `--font-display`   | Hero headlines, section titles, dialog titles |
-| Body      | Hanken Grotesk       | `--font-body`      | Paragraphs, descriptions, UI text      |
-| Mono      | JetBrains Mono       | `--font-mono`      | Labels, metadata, eyebrows, nav links, code, counters |
+| Slot      | Font                | CSS Variable      | Notes                                          |
+|-----------|---------------------|-------------------|------------------------------------------------|
+| Display   | **Fraunces**        | `--font-display`  | Variable serif. Soft, characterful, modern.    |
+| Body      | **Geist**           | `--font-body`     | Geometric sans (Vercel). Crisp, technical.     |
+| Mono      | **JetBrains Mono**  | `--font-mono`     | Code, API keys, model IDs only.                |
 
 All loaded via `next/font/google` with `display: "swap"`.
 
-### OpenType Features
+**Why this pairing:** Fraunces' optical-sizing axis gives headlines a soft, almost editorial warmth — the opposite of a tech-bro grotesk. Geist keeps the UI crisp and technical (audience: developers). JetBrains Mono is reserved for code and identifiers — **not** UI labels.
 
-```css
-font-feature-settings: "ss01", "cv11", "calt";
-```
+### Type Scale
 
-### Type Scale & Patterns
+| Pattern              | Class                                                                         |
+|----------------------|-------------------------------------------------------------------------------|
+| Hero headline        | `font-display text-5xl font-medium tracking-tight md:text-6xl lg:text-7xl`    |
+| Page title           | `font-display text-3xl font-medium tracking-tight md:text-4xl`                |
+| Section heading      | `font-display text-2xl font-medium tracking-tight md:text-3xl`                |
+| Card title           | `font-display text-lg font-medium`                                            |
+| Body large           | `text-lg leading-relaxed text-muted-foreground`                               |
+| Body                 | `text-sm leading-relaxed` (UI), `text-base leading-relaxed` (content)         |
+| Label                | `text-sm font-medium text-foreground`                                         |
+| Metadata             | `text-xs text-muted-foreground`                                               |
+| Code / model ID      | `font-mono text-xs text-muted-foreground`                                     |
 
-| Pattern                   | Class                                                     |
-|---------------------------|-----------------------------------------------------------|
-| **Hero headline**         | `font-display text-6xl font-semibold leading-[0.95] tracking-tight md:text-7xl lg:text-8xl` |
-| **Section heading**       | `font-display text-4xl font-semibold tracking-tight text-balance md:text-5xl` |
-| **Dialog title**          | `font-display text-2xl font-semibold tracking-tight`      |
-| **Body paragraph**        | `text-base leading-relaxed text-muted-foreground sm:text-lg` |
-| **Section eyebrow**       | `font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground` |
-| **Nav link**              | `font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground` |
-| **Label (field/meta)**    | `font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground` |
-| **Inline label (11px)**   | `font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground` |
-| **Metadata dot-separated**| `font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground` with `·` separators |
-| **Counter / tabular**     | `font-mono tabular-nums` — pad with leading zeros via `String(n).padStart(N, "0")` |
-| **Code / keys**           | `font-mono text-xs text-foreground`                       |
+### Typography Rules
 
-### Key Typography Rules
-
-- **ALL labels are uppercase monospaced** — no exceptions.
-- **Letter-spacing conventions:** `0.22em` for primary labels, `0.18em` for secondary metadata, `0.14em`–`0.16em` for nav/filter items, `0.32em` for cinematic markers.
-- **Leading zeros** are used for counters: `001`, `047`, `003 / 500`.
-- **Section eyebrows** follow the pattern: `01 — SECTION NAME` or `01 — SECTION NAME / SUBSECTION · DETAIL`.
-- **Dot separators** use `·` (middle dot) between metadata items, rendered with `text-muted-foreground/40` or `/60`.
+- **Sentence case everywhere.** Never `UPPERCASE` for UI labels.
+- **No letter-spacing tricks.** Default tracking (or `tracking-tight` for display).
+- **Display font for headlines and titles only** — never body text.
+- **Mono font for code-like values only** — model IDs, API keys, image dimensions. Never for normal labels.
+- **No leading-zero padding** on counters (`5 credits`, not `005`).
+- **Italics are allowed and encouraged** for display headlines — Fraunces' italic axis is one of its strengths.
 
 ---
 
@@ -108,39 +123,45 @@ font-feature-settings: "ss01", "cv11", "calt";
 ### Container
 
 ```
-container mx-auto px-4 sm:px-6
+container mx-auto max-w-6xl px-6 sm:px-8
 ```
 
-- Max width: default Tailwind container
-- Horizontal padding: `px-4` (mobile), `sm:px-6` (640px+)
+Most content sits inside `max-w-6xl`. Marketing content can stretch to `max-w-7xl`. Dashboard content prefers `max-w-5xl` for comfortable reading.
 
 ### Section Spacing
 
-| Pattern              | Classes                          |
-|----------------------|-----------------------------------|
-| Section vertical     | `py-24 lg:py-32`                 |
-| Section header gap   | `mb-12 flex flex-col gap-4`      |
-| Card padding         | `p-5` or `p-6`                   |
-| Inner panel dividers | `h-px bg-border` (aria-hidden)   |
-| Between sections     | `border-b border-border/60`      |
+| Pattern              | Classes                            |
+|----------------------|------------------------------------|
+| Section vertical     | `py-20 md:py-28`                   |
+| Card padding         | `p-6` (default), `p-8` (emphasis)  |
+| Stack gap (vertical) | `space-y-6` content, `space-y-3` form fields |
+| Between sections     | No hard borders — use whitespace   |
 
 ### Dashboard Layout
 
 ```
-min-h-screen md:grid md:grid-cols-[260px_1fr]
+min-h-screen md:grid md:grid-cols-[240px_1fr]
 ```
 
-- Sidebar: 260px fixed width (hidden on mobile, sheet on mobile)
-- Topbar: `sticky top-0 z-30 h-14`
+- Sidebar: 240px on desktop, full-screen sheet on mobile
+- No sticky topbar by default. Page header lives inline at the top of each page.
+- Pages get `px-8 py-10 md:px-12 md:py-12` for breathing room.
 
 ### Radius
 
-Base radius: `0.5rem`. Sharp (no radius) is used for cinematic elements:
-- **Buttons in cinematic context:** `rounded-none`
-- **Cards / panels / dialogs:** `rounded-none` (sharp edges)
-- **shadcn defaults:** keep `rounded-md` / `rounded-lg` where appropriate
+Base radius: `0.75rem` (12px).
 
-**Rule:** Dashboard chrome, action buttons, select triggers, badges, dialogs all use `rounded-none`. Only standard UI primitives (dropdowns, tooltips) keep their default radius.
+| Element              | Radius                  | Class            |
+|----------------------|-------------------------|------------------|
+| Buttons              | 10px                    | `rounded-[10px]` |
+| Inputs / selects     | 10px                    | `rounded-[10px]` |
+| Cards / panels       | 16px                    | `rounded-2xl`    |
+| Dialogs              | 20px                    | `rounded-[20px]` |
+| Pills / chips        | full                    | `rounded-full`   |
+| Avatars              | full                    | `rounded-full`   |
+| Images in gallery    | 12px                    | `rounded-xl`     |
+
+**Never use `rounded-none`** anywhere except for full-bleed sections.
 
 ---
 
@@ -148,255 +169,225 @@ Base radius: `0.5rem`. Sharp (no radius) is used for cinematic elements:
 
 ### 5.1 Buttons
 
-**Source:** `src/components/ui/button.tsx` (shadcn CVA)
+**Source:** `src/components/ui/button.tsx`
 
-| Variant       | Usage                                          |
-|---------------|------------------------------------------------|
-| `default`     | Primary actions — lime bg, dark text            |
-| `destructive` | Danger actions — red                            |
-| `outline`     | Secondary actions — border + transparent        |
-| `secondary`   | Alternative secondary                           |
-| `ghost`       | Minimal — no border, hover bg only              |
-| `link`        | Text link style with underline                  |
+| Variant       | Usage                                              | Look                                              |
+|---------------|----------------------------------------------------|---------------------------------------------------|
+| `default`     | Primary action                                     | Coral bg, white text, soft shadow                 |
+| `secondary`   | Alt action on cards                                | Subtle cream/charcoal bg, foreground text         |
+| `outline`     | Tertiary                                           | 1px border, transparent bg                        |
+| `ghost`       | Lightweight, inline                                | No border, hover bg only                          |
+| `destructive` | Danger                                             | Red bg, white text                                |
+| `link`        | Text link                                          | Underline on hover                                |
 
-**Sizes:** `sm` (h-8), `default` (h-9), `lg` (h-10), `icon` (size-9).
+**Sizes:** `sm` (h-8 px-3), `default` (h-10 px-4), `lg` (h-11 px-6).
 
-**Cinematic CTA pattern:**
+**Standard button:**
 ```tsx
-<Button className="glow-lime rounded-none px-6 font-mono text-xs uppercase tracking-[0.18em]">
-  Action text →
+<Button>Generate image</Button>
+```
+
+**Primary CTA (with arrow):**
+```tsx
+<Button size="lg" className="gap-2">
+  Generate
+  <ArrowRight className="size-4" />
 </Button>
 ```
 
-CTA buttons always include:
-- `glow-lime` for the lime box-shadow
-- `rounded-none` for sharp edges
-- Monospaced uppercase text
-- Arrow suffix (`→`) for primary CTAs
+- Buttons get a soft hover lift: `hover:shadow-sm transition-shadow`
+- No `glow-lime` style. Coral primary is enough.
+- No `rounded-none`. Always `rounded-[10px]`.
 
 ### 5.2 Cards & Panels
 
-**Source:** `src/components/ui/card.tsx`
-
-Standard cards: `rounded-lg border bg-card text-card-foreground shadow-sm`.
-
-**Cinematic panel pattern** (used in settings, filters, MCP overview):
+**Standard card:**
 ```tsx
-<div className="border border-border/60 bg-card/40">
-  {/* Header bar */}
-  <div className="flex items-center justify-between border-b border-border/60 px-4 py-2.5">
-    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-      Panel title
-    </p>
-  </div>
-  {/* Content */}
-  <div className="p-5">...</div>
+<div className="rounded-2xl border bg-card p-6 shadow-sm">
+  ...
 </div>
 ```
 
-- Use `bg-card/40` or `bg-background/40` for semi-transparent surfaces
-- Section dividers: `<div aria-hidden="true" className="h-px bg-border" />`
+- `bg-card` (white in light, raised charcoal in dark)
+- `border` (single hairline, full strength)
+- `shadow-sm` for subtle depth (never `shadow-lg` except on dialogs)
+- `p-6` standard, `p-8` for emphasis
 
-### 5.3 Section Headers (Landing)
+**Section dividers:** Use whitespace and headings, not visible borders.
 
-Section headers follow a strict pattern with a left lime border:
+### 5.3 Section Headers
 
 ```tsx
-<header className="mb-12 flex flex-col gap-4 border-l border-primary/40 pl-4">
-  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-    02 — SECTION TITLE
-  </p>
-  <h2 className="font-display text-4xl font-semibold tracking-tight text-balance md:text-5xl">
-    Headline text here.
-  </h2>
-  <p className="max-w-xl text-base text-muted-foreground">
-    Description paragraph.
+<header className="space-y-2">
+  <h1 className="font-display text-3xl font-medium tracking-tight">
+    Your library
+  </h1>
+  <p className="text-muted-foreground">
+    Every image you've made. Filter, favorite, regenerate.
   </p>
 </header>
 ```
 
-- Numbered eyebrow: `01 — NAME`, `02 — NAME`, etc.
-- Left border: `border-l border-primary/40 pl-4`
-- Max prose width: `max-w-xl`
+No eyebrows. No numbered prefixes. No left lime borders. Just a title and a friendly subtitle.
 
 ### 5.4 Forms & Inputs
 
-**Input:** `h-9` (standard), `h-10` (settings/filters), `h-12` (dialog emphasis).
-
-**Cinematic input override:**
-```
-rounded-none border-border bg-background/40 font-mono text-xs uppercase tracking-[0.12em]
+**Input:**
+```tsx
+<Input className="h-10 rounded-[10px]" placeholder="Describe an image..." />
 ```
 
-**Select triggers in dashboard context:**
-```
-h-10 w-full rounded-none border-border/60 bg-background/40 font-mono text-xs uppercase tracking-[0.14em]
+- `h-10` standard. `h-9` for compact contexts.
+- `rounded-[10px]` always.
+- Placeholder uses friendly sentence-case copy.
+- Focus ring: 2px coral with `focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2`.
+
+**Textarea (prompt composer):**
+```tsx
+<Textarea
+  className="min-h-[120px] resize-none rounded-2xl border bg-card p-4 text-base leading-relaxed shadow-sm"
+  placeholder="What should we make?"
+/>
 ```
 
-**Chip selectors** (aspect ratio, style presets):
+The prompt input is the hero on the generation page — it gets the larger card-like treatment.
+
+### 5.5 Chips / Pills (for option selection)
+
+Used for aspect ratio, style preset, reasoning level:
+
 ```tsx
 <button
   className={cn(
-    "border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
+    "rounded-full border px-3.5 py-1.5 text-sm transition-colors",
     selected
-      ? "border-primary text-primary glow-lime"
-      : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+      ? "border-primary bg-primary/10 text-primary"
+      : "border-border bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground"
   )}
 >
+  16:9
+</button>
 ```
 
-### 5.5 Badges
+- Rounded full
+- Selected state uses `bg-primary/10` + `text-primary` + `border-primary`
+- No glow. No uppercase. No mono.
 
-**Cinematic badge pattern** (API key status):
+### 5.6 Badges
+
 ```tsx
-<Badge
-  variant="outline"
-  className="gap-1.5 rounded-none border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-primary"
->
-  <span className="inline-block size-1.5 rounded-full bg-primary shadow-[0_0_6px_oklch(0.9_0.22_130/0.7)]" />
-  Active
+<Badge className="rounded-full bg-primary/10 text-primary hover:bg-primary/15">
+  New
 </Badge>
 ```
 
-Status indicators use a glowing dot + uppercase label.
+Status badges use solid color at `/10` opacity with foreground text in the same hue. Always pill-shaped.
 
-### 5.6 Tables
-
-Tables use `border border-border/60 bg-card/40` wrapper. Table headers are styled with the standard meta label pattern. Rows get a lime left-border accent on hover:
-
-```
-[&>td:first-child]:border-l-2 [&>td:first-child]:border-transparent
-hover:[&>td:first-child]:border-primary
-```
-
-### 5.7 Dialogs
+### 5.7 Tables
 
 ```tsx
-<DialogContent className="gap-5 rounded-none border-border bg-card sm:max-w-[520px]">
+<table className="w-full text-sm">
+  <thead>
+    <tr className="border-b text-left text-xs font-medium text-muted-foreground">
+      <th className="py-3 pr-4">Name</th>
+      ...
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="border-b last:border-0 hover:bg-accent/50">
+      ...
+    </tr>
+  </tbody>
+</table>
 ```
 
-- Always `rounded-none`
-- Step indicators: `font-mono text-[10px]` eyebrow like `New key — 01 / 02`
-- Title: `font-display text-2xl font-semibold tracking-tight`
-- Footer buttons: ghost + primary with `glow-lime rounded-none font-mono text-xs uppercase tracking-[0.18em]`
+- Hairline borders between rows
+- Hover row gets subtle accent bg
+- No left-border accents, no mono headers
 
-### 5.8 Empty States
+### 5.8 Dialogs
 
 ```tsx
-<div className="border border-dashed border-border/60 bg-card/40 p-16 text-center">
-  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-    — empty reel —
+<DialogContent className="rounded-[20px] border bg-card p-8 sm:max-w-md">
+  <DialogTitle className="font-display text-2xl font-medium tracking-tight">
+    New key
+  </DialogTitle>
+  <DialogDescription className="text-muted-foreground">
+    Give it a memorable name.
+  </DialogDescription>
+  ...
+</DialogContent>
+```
+
+- Larger radius (20px)
+- Display font for the title
+- Sentence case
+- No frame markers, no "01 / 02"
+
+### 5.9 Empty States
+
+```tsx
+<div className="rounded-2xl border border-dashed bg-card/50 p-12 text-center">
+  <p className="font-display text-xl font-medium">Nothing here yet</p>
+  <p className="mt-2 text-sm text-muted-foreground">
+    Generate your first image to get started.
   </p>
-  <p className="mt-4 font-mono text-sm uppercase tracking-[0.18em] text-foreground">
-    No frames match
-  </p>
-  <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-    Descriptive help text.
-  </p>
+  <Button className="mt-6">Start generating</Button>
 </div>
 ```
 
-Use dashed borders and cinematic language.
+Dashed border + warm copy + action button. No "— empty reel —" cinematic language.
 
 ---
 
-## 6. Cinematic Chrome & Decorative Elements
+## 6. Visual Details
 
-### 6.1 Live Indicator Dot
+These are the *only* decorative effects we use. Everything else has been removed.
 
-A blinking lime dot used throughout to signal "live" / "connected":
+### 6.1 Soft Shadow
 
-```tsx
-<span
-  aria-hidden="true"
-  className="inline-block size-2 rounded-full bg-primary animate-cursor-blink shadow-[0_0_8px_oklch(0.9_0.22_130/0.6)]"
-/>
-```
-
-Sizes: `size-1.5` (inline), `size-2` (header/logo), `size-2.5` (traffic lights).
-
-### 6.2 Corner Ticks
-
-`+` markers placed at each corner of a surface to evoke a film plate registration mark:
-
-```tsx
-<span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 font-mono text-xs text-primary/70 select-none">+</span>
-<span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 font-mono text-xs text-primary/70 select-none">+</span>
-<span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 font-mono text-xs text-primary/70 select-none">+</span>
-<span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 font-mono text-xs text-primary/70 select-none">+</span>
-```
-
-Used on: prompt composer, result stage plate. Lightbox uses `left-3 top-3` positioning.
-
-### 6.3 Grain Overlay
-
-Applied to `<body>` via `grain` class. A fixed full-viewport SVG noise overlay at 3% opacity with `mix-blend-mode: overlay`.
-
-### 6.4 Scanlines
-
-Applied to hero and result stage via `scanlines` class. Repeating linear gradient creating 2px transparent / 1px black horizontal lines at 4% opacity.
-
-### 6.5 Bracket Frame
-
-Hover effect for gallery cards. Lime corner brackets slide outward on hover:
-
-```tsx
-<figure className="bracket-frame group ...">
-```
-
-CSS uses `::before` / `::after` with 12px corner borders that animate opacity + position on hover.
-
-### 6.6 Film Progress Bar
-
-Animated diagonal stripe overlay for loading / generation states:
-
-```tsx
-<div className="film-progress h-1 border border-primary/30 opacity-80" />
-```
-
-Uses `film-march` animation (repeating 45° stripes at lime opacity).
-
-### 6.7 Glow Lime
-
-Box shadow effect for primary CTAs and active selections:
+The single shadow language across the app:
 
 ```css
-.glow-lime {
-  box-shadow:
-    0 0 0 1px oklch(0.9 0.22 130 / 0.4),
-    0 0 24px -4px oklch(0.9 0.22 130 / 0.35);
+.shadow-sm  /* card resting */
+.shadow-md  /* hover or floating */
+.shadow-lg  /* dialogs, popovers */
+```
+
+No custom box-shadow values. No glow colors.
+
+### 6.2 Coral Wash
+
+Selected/active states get a 10% wash of primary:
+
+```
+bg-primary/10 text-primary border-primary
+```
+
+That's it. No other color is allowed for "selected" state.
+
+### 6.3 Background Gradient (Marketing Only)
+
+The landing-page hero gets a single subtle radial gradient — applied to a single element, not the whole body:
+
+```css
+.hero-glow {
+  background-image: radial-gradient(
+    ellipse at 50% 0%,
+    oklch(0.7 0.17 35 / 0.08) 0%,
+    transparent 60%
+  );
 }
 ```
 
-### 6.8 Sprocket Holes
+Apply sparingly. Dashboard pages get **no** decorative gradients.
 
-Film-strip sprocket holes on the "How It Works" cards:
-
-```tsx
-<div
-  aria-hidden="true"
-  className="h-3 border-b border-border/60"
-  style={{
-    backgroundImage: "repeating-linear-gradient(to right, transparent 0 14px, oklch(0.06 0.008 240) 14px 22px)"
-  }}
-/>
-```
-
-### 6.9 Selection Highlight
+### 6.4 Selection Color
 
 ```css
 ::selection {
-  background-color: oklch(0.9 0.22 130 / 0.35);
+  background-color: oklch(0.7 0.17 35 / 0.25);
   color: var(--foreground);
-}
-```
-
-### 6.10 Auth Background
-
-Radial gradient from lime to transparent:
-```css
-.auth-bg {
-  background-image: radial-gradient(circle at 50% 0%, oklch(0.9 0.22 130 / 0.06) 0%, transparent 55%);
 }
 ```
 
@@ -404,45 +395,36 @@ Radial gradient from lime to transparent:
 
 ## 7. Animation
 
-### Keyframe Animations
+### Principles
 
-| Name            | Token                    | Description                          | Duration   |
-|-----------------|--------------------------|--------------------------------------|------------|
-| `fade-in`       | `animate-fade-in`        | Opacity 0→1                          | 0.3s ease-out |
-| `fade-up`       | `animate-fade-up`        | Opacity 0→1 + translateY 8px→0      | 0.4s ease-out |
-| `scale-in`      | `animate-scale-in`       | Opacity 0→1 + scale 0.97→1          | 0.2s ease-out |
-| `cursor-blink`  | `animate-cursor-blink`   | Steps blink (live indicators)        | 1s infinite |
-| `film-march`    | `animate-film-march`     | translateX stripe loop               | 1s linear infinite |
-| `mask-wipe`     | `animate-mask-wipe`      | clip-path reveal left→right          | 0.9s cubic-bezier(0.7, 0, 0.2, 1) |
+- **One entrance animation on initial load, max.** No staggered choreography.
+- **Hover transitions** belong on interactive elements (buttons, cards, links).
+- **No infinite animations.** No `cursor-blink`, no `film-march`, no scanning sweeps.
 
-### Staggered Entrance
+### Available Keyframes
 
-Hero elements use `animationDelay` with `animationFillMode: "both"`:
-- Eyebrow → 0ms
-- Headline line 1 → 120ms
-- Headline line 2 → 420ms
-- Terminal block → 600ms
-- Sub-paragraph → 780ms
-- Feature pills → 900ms
-- CTAs → 1100ms
-- Works-with strip → 1240ms
+| Name        | Token              | Use                              | Duration                   |
+|-------------|--------------------|--------------------------------- |----------------------------|
+| `fade-in`   | `animate-fade-in`  | Initial mount, single elements   | 0.3s ease-out              |
+| `fade-up`   | `animate-fade-up`  | Page sections on first paint     | 0.4s ease-out              |
 
-### Gallery Stagger
+### Loading States
 
-Image cards stagger with `animationDelay: ${index * 30}ms` using `animate-fade-up`.
+While generating an image, show:
+1. A **soft pulsing skeleton** (`animate-pulse` from Tailwind) on the result panel
+2. A simple progress label below: "Cooking your image…"
 
-### Scroll Reveal
+No marching stripe bars. No scan sweeps. Tailwind's built-in `animate-pulse` is enough.
 
-`<Reveal>` component uses IntersectionObserver (threshold 0.15) with CSS transition:
-```
-opacity .6s ease, transform .6s ease
-```
+### Hover
 
-### Interactive Transitions
+- Buttons: `transition-colors duration-150`
+- Cards (interactive): `transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5`
+- Links: `transition-colors`
 
-- Card hover: `transition-all duration-200 ease-out` with `-translate-y-0.5 shadow-md`
-- Border color transitions: `transition-colors`
-- Focus rings: `focus-visible:ring-[3px] focus-visible:ring-ring/50`
+### Page Transitions
+
+None. Next.js handles route changes natively — no custom transition layer.
 
 ---
 
@@ -450,214 +432,241 @@ opacity .6s ease, transform .6s ease
 
 **Library:** Lucide React (`lucide-react`)
 
-**Standard size:** `size-4` (16px) in buttons and UI elements, `size-3`–`size-3.5` for compact action buttons.
+**Standard sizes:**
+- `size-4` (16px) — inline UI
+- `size-5` (20px) — buttons
+- `size-6` (24px) — section headers and feature cards
 
-**Common icons used:**
-- Navigation: `Sparkles`, `Library`, `KeyRound`, `Plug`, `Menu`, `ChevronUp`
-- Actions: `Copy`, `Download`, `RefreshCcw`, `Bookmark`, `Trash2`, `Star`, `Shuffle`, `Dices`
-- UI: `Moon`, `Sun`, `X`, `MoreHorizontal`, `Search`, `Check`, `LogOut`, `User`, `ShieldAlert`
+**Stroke:** Default 2 (don't override).
+
+**No coral-tint trick.** Icons inherit `currentColor` from their parent text color.
 
 ---
 
-## 9. Navigation Patterns
+## 9. Navigation
 
 ### Site Header (Landing)
 
-- Sticky: `sticky top-0 z-40`
-- Frosted glass: `bg-background/70 backdrop-blur supports-backdrop-filter:bg-background/60`
-- Border: `border-b border-border/60`
-- Logo: live dot + monospaced "Get Images" + divider + version tag
+- **Position:** Sticky `top-0 z-40`
+- **Background:** `bg-background/80 backdrop-blur`
+- **Height:** `h-16`
+- **Border:** Single 1px hairline `border-b`
+- **Content:** Logo on left, nav links centered (md+), CTA on right
+- **No** version tag, no blinking dot, no frame markers
+
+```tsx
+<header className="sticky top-0 z-40 h-16 border-b bg-background/80 backdrop-blur">
+  <div className="container mx-auto flex h-full max-w-6xl items-center justify-between px-6">
+    <Logo />
+    <nav className="hidden gap-8 md:flex">...</nav>
+    <Button>Sign in</Button>
+  </div>
+</header>
+```
 
 ### Dashboard Sidebar
 
-- Fixed 260px on desktop, Sheet on mobile
-- Active link: `border-l-2 border-primary text-primary bg-accent/30` with bracket decoration `[ Label ]`
-- Frame numbers on each nav item: `01`, `02`, `03`, `04`
-- Usage meter at bottom with progress bar
+- **Width:** 240px
+- **Background:** `bg-card` (a touch lighter than page bg in light, raised in dark)
+- **No border on right** — uses subtle background contrast instead
+- **Nav item:** Plain text + icon, no frame number, no bracket on active
 
-### Dashboard Topbar
+```tsx
+<Link
+  href="/dashboard/library"
+  className={cn(
+    "flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm transition-colors",
+    isActive
+      ? "bg-primary/10 text-primary"
+      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+  )}
+>
+  <Library className="size-4" />
+  Library
+</Link>
+```
 
-- Sticky: `sticky top-0 z-30 h-14`
-- Frosted glass header with frame number + page title
-- System status badge: `LIVE / SYS OK` with blinking dot
-- User avatar dropdown
+### No Topbar
+
+The dashboard no longer has a global topbar. Each page renders its own inline header (title + description + actions). The sidebar holds the user menu and credit balance.
 
 ---
 
 ## 10. Page Patterns
 
-### Landing Page Sections
+### Landing Page
 
-Each landing section follows this structure:
-1. `<section>` with `id`, `aria-labelledby`, `border-b border-border/60`
-2. Container: `container mx-auto px-4 py-24 sm:px-6 lg:py-32`
-3. Numbered header block (see Section Headers)
-4. Content grid
+1. **Hero** — Big display headline, supporting copy, two CTAs ("Try it" + "Read the docs")
+2. **How it works** — Three steps in a 3-column grid. Cards with icon + title + 1 sentence.
+3. **Examples** — Masonry grid of generations. No corner ticks.
+4. **CTA** — Single panel, gradient wash, single button.
+
+No "01 — SECTION" eyebrows. Section titles are display-font H2s with friendly subtitles.
 
 ### Dashboard Pages
 
-Dashboard pages use:
-- `p-6 sm:p-8` for page padding
-- Page header: eyebrow + title + optional description
-- Action buttons in the header row (top-right)
-- Sticky filter bars for list pages
+Every dashboard page follows:
+
+```tsx
+<div className="px-8 py-10 md:px-12 md:py-12">
+  <header className="mb-10 flex items-end justify-between gap-4">
+    <div className="space-y-2">
+      <h1 className="font-display text-3xl font-medium tracking-tight">
+        Page title
+      </h1>
+      <p className="text-muted-foreground">Short, friendly subtitle.</p>
+    </div>
+    <div className="flex gap-2">{/* page actions */}</div>
+  </header>
+
+  {/* page content */}
+</div>
+```
 
 ---
 
 ## 11. Accessibility
 
-### Focus Management
-
-```css
-:focus-visible {
-  @apply outline-2 outline-offset-2 outline-ring;
-}
-```
-
-All interactive elements use `focus-visible:ring-[3px] focus-visible:ring-ring/50` or `focus-visible:ring-2 focus-visible:ring-ring/60`.
-
-### Skip Link
-
-```tsx
-<a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 ...">
-  Skip to main content
-</a>
-```
-
-### ARIA Patterns
-
-- All decorative elements use `aria-hidden="true"`
-- `role="list"` on styled `<ul>` elements
-- `role="banner"` on headers, `role="contentinfo"` on footers
-- `role="radio"` / `aria-checked` on chip selectors
-- `role="switch"` / `aria-checked` on toggle buttons
-- `role="progressbar"` with `aria-valuenow/min/max` on progress bars
-- `role="img"` with `aria-label` on complex visual areas (result stage)
-- `role="tablist"` / `role="tab"` / `aria-selected` on tab-like elements
-- `aria-live="polite"` on character counters and status changes
-- `aria-current="page"` on active navigation links
-- `aria-label` on icon-only buttons and navigation landmarks
-
-### Semantic Landmarks
-
-- Navigation: `<nav aria-label="...">`
-- Footers: `<footer role="contentinfo">`
-- Sections: `<section aria-labelledby="...">`
-- Dialogs: always include `DialogTitle` and `DialogDescription` (use `sr-only` if visually hidden)
+- All interactive elements get `focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2`
+- Decorative elements get `aria-hidden="true"`
+- Skip link remains: `<a href="#main-content" className="sr-only focus:not-sr-only ...">`
+- Form labels are real `<Label>` elements, not placeholder-only
+- Color contrast: foreground on background hits AAA in both modes (verified for coral too)
 
 ---
 
 ## 12. Responsive Breakpoints
 
-| Breakpoint | Width  | Key Changes                                     |
-|------------|--------|--------------------------------------------------|
-| Base       | 0+     | Single column, `px-4`, sidebar hidden            |
-| `sm`       | 640px  | `px-6`, 2-column grids start                    |
-| `md`       | 768px  | Sidebar visible, topbar adapts, nav links show   |
-| `lg`       | 1024px | 3-column grids, hero splits to 7/5 grid         |
-| `xl`       | 1280px | 4-column gallery                                 |
-
-### Mobile Adaptations
-
-- Sidebar → Sheet (slide from left)
-- Navigation links → hidden (mobile nav sheet)
-- Hero → stacked (single column)
-- Gallery → 1 column → 2 → 3 → 4
-- Filter bars wrap naturally with `flex-wrap`
+| Breakpoint | Width   | Behavior                                            |
+|------------|---------|-----------------------------------------------------|
+| Base       | 0+      | Single column, sidebar → sheet, headlines `text-5xl` |
+| `sm`       | 640px   | `px-8`, comfortable padding                          |
+| `md`       | 768px   | Sidebar visible, nav links shown                     |
+| `lg`       | 1024px  | Multi-column grids, hero hits `text-7xl`             |
+| `xl`       | 1280px  | Library grid → 4 columns                             |
 
 ---
 
 ## 13. Utility Reference
 
-### Project-Specific Utilities (globals.css)
+### Project Utilities (globals.css)
 
-| Utility           | Effect                                                |
-|--------------------|-------------------------------------------------------|
-| `.grain`           | Full-viewport noise texture overlay (3% opacity)     |
-| `.scanlines`       | Horizontal scan-line overlay (4% opacity)            |
-| `.glow-lime`       | Lime box-shadow glow                                 |
-| `.bracket-frame`   | Corner bracket hover effect                          |
-| `.film-progress`   | Animated diagonal stripe progress bar                |
-| `.auth-bg`         | Radial lime gradient background                      |
-| `.card-interactive`| Hover lift + shadow transition                       |
+| Utility            | Effect                                              |
+|--------------------|-----------------------------------------------------|
+| `.hero-glow`       | Single soft coral radial gradient (hero only)       |
+| `.card-interactive`| Hover lift + shadow transition for clickable cards  |
+
+**That's it.** All cinematic utilities (grain, scanlines, glow-lime, bracket-frame, film-progress, sprocket) have been removed.
 
 ### Tailwind Custom Extensions
 
 | Token           | Maps To                    |
 |-----------------|----------------------------|
-| `font-sans`     | `--font-body`              |
-| `font-display`  | `--font-display`           |
-| `font-mono`     | `--font-mono`              |
-| `radius-sm/md/lg/xl` | Derived from `--radius` (0.5rem base) |
+| `font-sans`     | `--font-body` (Geist)      |
+| `font-display`  | `--font-display` (Fraunces)|
+| `font-mono`     | `--font-mono` (JetBrains)  |
 
 ---
 
-## 14. Component Library
+## 14. Image Model Capability Map
 
-### shadcn/ui Components
+Different models support different parameters. The UI must adapt per model.
 
-Base primitives from shadcn/ui, customized to the Neo-Cinema aesthetic:
+| Model                              | Common aspect ratios                                | Extra ratios | Thinking      | Seed |
+|-------------------------------------|----------------------------------------------------|--------------|---------------|------|
+| OpenAI gpt-image-1.5                | 1:1, 3:2, 2:3, 16:9, 9:16, 4:3, 3:4                 | —            | —             | —    |
+| OpenAI gpt-image-2                  | 1:1, 3:2, 2:3, 16:9, 9:16, 4:3, 3:4                 | —            | —             | —    |
+| Gemini 2.5 Flash Image              | 1:1, 3:2, 2:3, 16:9, 9:16, 4:3, 3:4                 | —            | —             | —    |
+| Gemini 3.1 Flash Image (Banana 2)   | 1:1, 3:2, 2:3, 16:9, 9:16, 4:3, 3:4                 | —            | default/deep  | —    |
+| Gemini 3 Pro Image (Banana Pro)     | 1:1, 3:2, 2:3, 16:9, 9:16, 4:3, 3:4                 | 21:9         | default/deep  | —    |
 
-| Component       | File                          | Key Overrides                        |
-|-----------------|-------------------------------|--------------------------------------|
-| Button          | `ui/button.tsx`               | CVA variants, glow-lime additions    |
-| Card            | `ui/card.tsx`                 | Standard shadcn                      |
-| Badge           | `ui/badge.tsx`                | Rounded-none overrides in usage      |
-| Input           | `ui/input.tsx`                | Standard shadcn                      |
-| Textarea        | `ui/textarea.tsx`             | Standard shadcn                      |
-| Dialog          | `ui/dialog.tsx`               | Custom `showCloseButton` prop        |
-| Select          | `ui/select.tsx`               | Rounded-none overrides in usage      |
-| Tabs            | `ui/tabs.tsx`                 | Line variant added                   |
-| Table           | `ui/table.tsx`                | Standard shadcn                      |
-| Tooltip         | `ui/tooltip.tsx`              | Standard shadcn                      |
-| Sheet           | `ui/sheet.tsx`                | Used for mobile nav                  |
-| Scroll Area     | `ui/scroll-area.tsx`          | Standard shadcn                      |
-| Dropdown Menu   | `ui/dropdown-menu.tsx`        | Standard shadcn                      |
-| Avatar          | `ui/avatar.tsx`               | Standard shadcn                      |
-| Separator       | `ui/separator.tsx`            | Custom implementation                |
-| Skeleton        | `ui/skeleton.tsx`             | Standard shadcn                      |
-| Spinner         | `ui/spinner.tsx`              | Custom with Loader2, sm/md/lg sizes  |
-| Mode Toggle     | `ui/mode-toggle.tsx`          | Sun/Moon with dropdown               |
-| Sonner (Toasts) | `ui/sonner.tsx`               | `richColors position="top-right"`    |
+**Rules:**
+- **Seed is removed entirely** — neither OpenAI image models nor Gemini image models accept seed as a parameter. The UI no longer collects it.
+- **Reasoning ("Deeper thinking") UI appears only when the selected model declares thinking support** — otherwise the control is hidden.
+- **Aspect ratios** are constrained to the selected model's declared list. The common seven ratios cover all five models; Gemini 3 Pro additionally supports 21:9.
 
-### Utility Function
+Capabilities are declared in `src/services/image-generation/models.ts` on each `ImageModelDefinition`:
 
-```tsx
-// src/lib/utils.ts
-import { clsx, type ClassValue } from "clsx";
-import { tailwind-merge } from "tailwind-merge";
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+```ts
+type ImageModelDefinition = {
+  id: string
+  providerId: ProviderId
+  modelId: string
+  name: string
+  description: string
+  aspectRatios: AspectRatio[]
+  thinking?: {
+    default: "low" | "minimal"
+    deep: "high"
+  }
 }
 ```
 
+### Thinking → Provider mapping
+
+The UI exposes a single toggle: **default** (fast, cheap) vs **deep** (slower, smarter).
+
+| Model                      | UI "default" → API value | UI "deep" → API value |
+|----------------------------|--------------------------|------------------------|
+| Gemini 3.1 Flash Image     | `minimal`                | `high`                 |
+| Gemini 3 Pro Image         | `low`                    | `high`                 |
+
+For models without thinking support, the toggle isn't rendered at all.
+
 ---
 
-## 15. Do's and Don'ts
+## 15. Credit Pricing
+
+Packs (defined in `src/lib/polar.ts` and `src/app/(site)/pricing/page.tsx`):
+
+| Pack    | Credits | USD    | $/credit  |
+|---------|---------|--------|-----------|
+| Starter | 100     | $5.00  | $0.050    |
+| Plus    | 500     | $22.50 | $0.045    |
+| Pro     | 1200    | $48.00 | $0.040    |
+
+### Per-model credit cost (and deep-thinking surcharge)
+
+Defined in `scripts/seed-model-pricing.ts` and stored in `model_pricing` table. The `creditCost` column is the **base** cost. The new `thinking_high_credit_cost` column is the cost when the user selects "deep" thinking (only relevant for thinking-capable models).
+
+| Model                              | Base credits | Deep-thinking credits | Real cost (USD) | Approx. margin |
+|------------------------------------|--------------|------------------------|-----------------|----------------|
+| OpenAI gpt-image-1.5               | 3            | —                      | ~$0.05          | ~58%           |
+| OpenAI gpt-image-2                 | 5            | —                      | ~$0.06–$0.21    | 30–70%         |
+| Gemini 2.5 Flash Image             | 3            | —                      | $0.039          | ~67%           |
+| Gemini 3.1 Flash Image             | 5            | 7                      | $0.067 / +tokens | ~66–71%       |
+| Gemini 3 Pro Image                 | 12           | 18                     | $0.134 / ~$0.20  | ~66–72%       |
+
+Margins computed at the Pro pack rate ($0.04/credit) — the worst case.
+
+When a generation runs with deep thinking, the server reads `thinking_high_credit_cost` from `model_pricing`. If absent (i.e. the model has no thinking support), it falls back to the base `creditCost`.
+
+---
+
+## 16. Do's and Don'ts
 
 ### Do
 
-- Use `font-mono uppercase tracking-[0.22em]` for all labels and metadata
-- Use `rounded-none` for cinematic/dashboard elements
-- Use `border-border/60` for subtle borders
-- Use `bg-card/40` or `bg-background/40` for semi-transparent panels
-- Use the live indicator dot for status/connection signals
-- Use corner ticks (`+`) on important visual surfaces
-- Use `glow-lime` on primary CTAs
-- Pad numbers with leading zeros
-- Use cinematic language: frames, plates, reels, runs, seeds
-- Use numbered eyebrows on section headers
-- Use `aria-hidden="true"` on all decorative elements
-- Use `oklch()` for any custom color values
+- Use Fraunces for headlines, Geist for UI, JetBrains Mono for code-like values only
+- Use sentence case for everything (titles, buttons, labels, microcopy)
+- Use the coral primary sparingly — selected states, primary buttons, links
+- Use rounded corners (`rounded-[10px]`, `rounded-2xl`, `rounded-full`)
+- Use generous whitespace — let content breathe
+- Use friendly microcopy ("What should we make?", "Nothing here yet")
+- Use Tailwind's built-in `animate-pulse` for loading states
+- Show reasoning-level UI **only** for models that support it
+- Adapt aspect-ratio options per model's declared capabilities
 
 ### Don't
 
-- Don't use rounded corners on dashboard/cinematic elements (reserve for shadcn defaults only)
-- Don't use colors outside the OKLCH token system
-- Don't use decorative text without `aria-hidden="true"`
-- Don't use body/sans font for labels — always monospaced
-- Don't skip the uppercase treatment on metadata/labels
-- Don't use generic loading states — use film-progress or scan-sweep patterns
-- Don't use standard placeholder text — use cinematic microcopy
-- Don't forget the grain overlay on the body
-- Don't use `text-sm` for eyebrow labels — always `text-[10px]` or `text-[11px]`
+- Don't use `rounded-none` (cinematic sharp edges are gone)
+- Don't use `UPPERCASE` for UI labels, ever
+- Don't use mono font for non-code UI text
+- Don't add glow, blinking dots, scanlines, grain, brackets, sprockets, frame markers
+- Don't write copy like "frame 003 of 500", "compose · render · refine", "live"
+- Don't use letter-spacing tracking values like `[0.22em]`
+- Don't add a sticky topbar on dashboard pages — each page owns its header
+- Don't expose seed in the UI — no current model uses it
+- Don't show reasoning UI for models that don't support thinking
+- Don't add infinite animations (`cursor-blink`, `film-march`, etc.)
+- Don't fight the design system in the name of "visual interest" — restraint is the language

@@ -22,19 +22,26 @@ export const metadata: Metadata = {
 /*  Credit pack definitions                                            */
 /* ------------------------------------------------------------------ */
 
-const CREDIT_PACKS = [
+type CreditPack = {
+  name: string;
+  slug: string;
+  credits: number;
+  price: number;
+  description: string;
+  features: string[];
+};
+
+const CREDIT_PACKS: CreditPack[] = [
   {
     name: "Starter",
     slug: "starter",
     credits: 100,
     price: 5.0,
-    perCredit: 0.05,
-    bonus: null,
-    description: "Perfect for trying things out",
+    description: "Perfect for trying things out.",
     features: [
-      "~33 images with standard models",
-      "~10 images with Pro models",
-      "No expiry",
+      "100 credits — no expiry",
+      "Use any image model",
+      "Friendly support over email",
     ],
   },
   {
@@ -42,14 +49,12 @@ const CREDIT_PACKS = [
     slug: "plus",
     credits: 500,
     price: 22.5,
-    perCredit: 0.045,
-    bonus: "10%",
-    description: "For regular creators",
+    description: "For regular creators.",
     features: [
-      "~166 images with standard models",
-      "~50 images with Pro models",
-      "No expiry",
-      "Best value per credit",
+      "500 credits — no expiry",
+      "Use any image model",
+      "Better value per credit",
+      "Priority support",
     ],
   },
   {
@@ -57,17 +62,15 @@ const CREDIT_PACKS = [
     slug: "pro",
     credits: 1200,
     price: 48.0,
-    perCredit: 0.04,
-    bonus: "20%",
-    description: "For power users & teams",
+    description: "For power users and teams.",
     features: [
-      "~400 images with standard models",
-      "~120 images with Pro models",
-      "No expiry",
+      "1,200 credits — no expiry",
+      "Use any image model",
       "Lowest cost per credit",
+      "Priority support",
     ],
   },
-] as const;
+];
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
@@ -76,245 +79,234 @@ const CREDIT_PACKS = [
 export default async function PricingPage() {
   const pricingRows = await getAllModelPricing();
 
-  // Merge pricing data with display names from the model registry
-  const models = pricingRows.map((row) => {
-    const model = IMAGE_MODELS.find((m) => m.id === row.modelId);
-    return {
-      modelId: row.modelId,
-      name: model?.name ?? row.modelId,
-      creditCost: row.creditCost,
-    };
-  });
+  // Merge pricing data with display names from the model registry, dropping
+  // rows whose model is no longer in the registry (defensive — the table
+  // should never advertise a model we can't actually serve).
+  const models = pricingRows
+    .map((row) => {
+      const model = IMAGE_MODELS.find((m) => m.id === row.modelId);
+      if (!model) return null;
+      return {
+        modelId: row.modelId,
+        name: model.name,
+        creditCost: row.creditCost,
+        thinkingHighCreditCost: row.thinkingHighCreditCost,
+      };
+    })
+    .filter((m): m is NonNullable<typeof m> => m !== null);
+
+  // The "Deep thinking" column only renders when at least one model has a
+  // thinking-high cost configured — otherwise the column is dead weight.
+  const showThinkingColumn = models.some(
+    (m) => m.thinkingHighCreditCost != null,
+  );
 
   return (
-    <>
-      {/* ---------------------------------------------------------- */}
-      {/*  Page header                                                */}
-      {/* ---------------------------------------------------------- */}
+    <div className="container mx-auto max-w-6xl px-6 py-20 sm:px-8 md:py-28">
+      {/* -------------------------------------------------------------- */}
+      {/*  Page header                                                    */}
+      {/* -------------------------------------------------------------- */}
+      <header className="mx-auto max-w-2xl space-y-3 text-center">
+        <h1 className="font-display text-4xl font-medium tracking-tight md:text-5xl">
+          Pricing
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Pay as you go. No subscriptions.
+        </p>
+      </header>
+
+      {/* -------------------------------------------------------------- */}
+      {/*  Credit packs                                                   */}
+      {/* -------------------------------------------------------------- */}
       <section
-        aria-labelledby="pricing-heading"
-        className="border-b border-border/60 py-24 lg:py-32"
+        aria-label="Credit packs"
+        className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3"
       >
-        <div className="container mx-auto px-4 sm:px-6">
-          <header className="flex flex-col gap-4 border-l border-primary/40 pl-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-              04 — Pricing
-            </p>
-            <h1
-              id="pricing-heading"
-              className="font-display text-4xl font-semibold tracking-tight text-balance md:text-5xl"
+        {CREDIT_PACKS.map((pack, index) => {
+          const isPopular = index === 1;
+
+          return (
+            <div
+              key={pack.slug}
+              className={cn(
+                "relative flex flex-col rounded-2xl border bg-card p-8 shadow-sm transition-all",
+                isPopular && "ring-2 ring-primary md:-translate-y-1",
+              )}
             >
-              Credits &amp; Pricing
-            </h1>
-            <p className="max-w-xl text-base text-muted-foreground">
-              Every generation costs credits. Pick a pack that fits your
-              production volume, load your reel, and start generating frames
-              on demand.
-            </p>
-          </header>
-        </div>
-      </section>
+              {isPopular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-primary-foreground">
+                  Popular
+                </span>
+              )}
 
-      {/* ---------------------------------------------------------- */}
-      {/*  Credit packs                                               */}
-      {/* ---------------------------------------------------------- */}
-      <section
-        aria-labelledby="credit-packs-heading"
-        className="border-b border-border/60 py-24 lg:py-32"
-      >
-        <div className="container mx-auto px-4 sm:px-6">
-          <header className="mb-12 flex flex-col gap-4 border-l border-primary/40 pl-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-              01 — Credit Packs
-            </p>
-            <h2
-              id="credit-packs-heading"
-              className="font-display text-4xl font-semibold tracking-tight text-balance md:text-5xl"
-            >
-              Load your reel.
-            </h2>
-          </header>
+              <h2 className="font-display text-2xl font-medium tracking-tight">
+                {pack.name}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {pack.description}
+              </p>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {CREDIT_PACKS.map((pack, index) => {
-              const isRecommended = index === 1;
+              <div className="mt-6 flex items-baseline gap-1">
+                <span className="font-display text-4xl font-medium tracking-tight">
+                  ${pack.price.toFixed(pack.price % 1 === 0 ? 0 : 2)}
+                </span>
+                <span className="text-sm text-muted-foreground">USD</span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                <span className="font-mono text-foreground">
+                  {pack.credits.toLocaleString()}
+                </span>{" "}
+                credits
+              </p>
 
-              return (
-                <div
-                  key={pack.name}
-                  className={cn(
-                    "relative border bg-card/40",
-                    isRecommended
-                      ? "border-primary/60 glow-lime"
-                      : "border-border/60",
-                  )}
-                >
-                  {isRecommended && (
-                    <span className="absolute -top-3 right-4 bg-primary px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-primary-foreground">
-                      Recommended
-                    </span>
-                  )}
-
-                  {/* Header bar */}
-                  <div className="flex items-center justify-between border-b border-border/60 px-5 py-2.5">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                      {pack.name}
-                    </p>
-                    {pack.bonus && (
-                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-                        Save {pack.bonus}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-5 p-6">
-                    {/* Price */}
-                    <div>
-                      <p className="font-display text-4xl font-semibold tracking-tight">
-                        ${pack.price.toFixed(2)}
-                      </p>
-                      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                        ${pack.perCredit.toFixed(3)} per credit
-                      </p>
-                    </div>
-
-                    {/* Credits + description */}
-                    <div>
-                      <p className="font-display text-lg font-semibold">
-                        {pack.credits.toLocaleString()} credits
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {pack.description}
-                      </p>
-                    </div>
-
-                    <div aria-hidden="true" className="h-px bg-border" />
-
-                    {/* Features */}
-                    <ul className="space-y-3" role="list">
-                      {pack.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className="flex items-start gap-2.5 text-sm text-muted-foreground"
-                        >
-                          <Check
-                            aria-hidden="true"
-                            className="mt-0.5 size-3.5 shrink-0 text-primary"
-                          />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* CTA */}
-                    <CheckoutButton
-                      slug={pack.slug}
-                      label={`Buy ${pack.credits.toLocaleString()} credits`}
-                      recommended={isRecommended}
+              <ul className="mt-6 space-y-3" role="list">
+                {pack.features.map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-start gap-2.5 text-sm text-foreground/90"
+                  >
+                    <Check
+                      aria-hidden="true"
+                      className="mt-0.5 size-4 shrink-0 text-primary"
                     />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto pt-8">
+                <CheckoutButton
+                  slug={pack.slug}
+                  label={`Get ${pack.name}`}
+                  recommended={isPopular}
+                />
+              </div>
+            </div>
+          );
+        })}
       </section>
 
-      {/* ---------------------------------------------------------- */}
-      {/*  Per-model cost table                                       */}
-      {/* ---------------------------------------------------------- */}
-      <section
-        aria-labelledby="cost-per-model-heading"
-        className="border-b border-border/60 py-24 lg:py-32"
-      >
-        <div className="container mx-auto px-4 sm:px-6">
-          <header className="mb-12 flex flex-col gap-4 border-l border-primary/40 pl-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-              02 — Cost Per Model
-            </p>
-            <h2
-              id="cost-per-model-heading"
-              className="font-display text-4xl font-semibold tracking-tight text-balance md:text-5xl"
-            >
-              Frames per pack.
-            </h2>
-          </header>
+      {/* -------------------------------------------------------------- */}
+      {/*  Per-model pricing                                              */}
+      {/* -------------------------------------------------------------- */}
+      <section aria-labelledby="per-model-heading" className="mt-20 space-y-4">
+        <header className="space-y-2">
+          <h2
+            id="per-model-heading"
+            className="font-display text-2xl font-medium tracking-tight md:text-3xl"
+          >
+            Per-model pricing
+          </h2>
+          <p className="text-muted-foreground">
+            Each image costs a few credits, depending on the model. Deep
+            thinking costs a bit more when supported.
+          </p>
+        </header>
 
-          <div className="overflow-x-auto border border-border/60 bg-card/40">
+        <div className="overflow-hidden rounded-2xl border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
+                  Model
+                </TableHead>
+                <TableHead className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
+                  Default
+                </TableHead>
+                {showThinkingColumn && (
+                  <TableHead className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
+                    Deep thinking
+                  </TableHead>
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {models.map((model) => (
+                <TableRow key={model.modelId}>
+                  <TableCell className="px-4 py-3.5 text-sm font-medium text-foreground">
+                    {model.name}
+                  </TableCell>
+                  <TableCell className="px-4 py-3.5 text-right text-sm text-foreground">
+                    <span className="font-mono">{model.creditCost}</span>{" "}
+                    <span className="text-muted-foreground">credits</span>
+                  </TableCell>
+                  {showThinkingColumn && (
+                    <TableCell className="px-4 py-3.5 text-right text-sm text-foreground">
+                      {model.thinkingHighCreditCost != null ? (
+                        <>
+                          <span className="font-mono">
+                            {model.thinkingHighCreditCost}
+                          </span>{" "}
+                          <span className="text-muted-foreground">credits</span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* ------------------------------------------------------------ */}
+        {/*  Images per pack                                              */}
+        {/* ------------------------------------------------------------ */}
+        <div className="mt-10 space-y-3">
+          <header className="space-y-1">
+            <h3 className="font-display text-lg font-medium">
+              How many images per pack?
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              At the default credit cost — deep thinking will use a few more.
+            </p>
+          </header>
+          <div className="overflow-hidden rounded-2xl border bg-card">
             <Table>
               <TableHeader>
-                <TableRow className="border-border/60 hover:bg-transparent">
-                  <TableHead className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
                     Model
                   </TableHead>
-                  <TableHead className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Credits / Image
-                  </TableHead>
-                  <TableHead className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Starter (100)
-                  </TableHead>
-                  <TableHead className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Plus (500)
-                  </TableHead>
-                  <TableHead className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Pro (1,200)
-                  </TableHead>
+                  {CREDIT_PACKS.map((pack) => (
+                    <TableHead
+                      key={pack.slug}
+                      className="px-4 py-3 text-right text-xs font-medium text-muted-foreground"
+                    >
+                      {pack.name}
+                    </TableHead>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {models.map((model) => (
-                  <TableRow
-                    key={model.modelId}
-                    className="border-border/60 transition-colors [&>td:first-child]:border-l-2 [&>td:first-child]:border-transparent hover:[&>td:first-child]:border-primary"
-                  >
-                    <TableCell className="font-mono text-sm tabular-nums text-foreground">
+                  <TableRow key={model.modelId}>
+                    <TableCell className="px-4 py-3.5 text-sm font-medium text-foreground">
                       {model.name}
                     </TableCell>
-                    <TableCell className="font-mono text-sm tabular-nums">
-                      {String(model.creditCost).padStart(2, "0")}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm tabular-nums">
-                      {String(
-                        Math.floor(CREDIT_PACKS[0].credits / model.creditCost),
-                      ).padStart(3, "0")}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm tabular-nums">
-                      {String(
-                        Math.floor(CREDIT_PACKS[1].credits / model.creditCost),
-                      ).padStart(3, "0")}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm tabular-nums">
-                      {String(
-                        Math.floor(CREDIT_PACKS[2].credits / model.creditCost),
-                      ).padStart(3, "0")}
-                    </TableCell>
+                    {CREDIT_PACKS.map((pack) => (
+                      <TableCell
+                        key={pack.slug}
+                        className="px-4 py-3.5 text-right text-sm text-foreground"
+                      >
+                        <span className="font-mono">
+                          {Math.floor(pack.credits / model.creditCost)}
+                        </span>{" "}
+                        <span className="text-muted-foreground">images</span>
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
         </div>
-      </section>
 
-      {/* ---------------------------------------------------------- */}
-      {/*  Note                                                       */}
-      {/* ---------------------------------------------------------- */}
-      <section aria-labelledby="pricing-note" className="py-24 lg:py-32">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="border border-border/60 bg-card/40 p-6">
-            <p
-              id="pricing-note"
-              className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
-            >
-              — Note —
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Credits are deducted per generation. Cost varies by model.
-              1&nbsp;credit&nbsp;=&nbsp;$0.05.
-            </p>
-          </div>
-        </div>
+        <p className="pt-2 text-xs text-muted-foreground">
+          1 credit ≈ $0.04 – $0.05 depending on pack.
+        </p>
       </section>
-    </>
+    </div>
   );
 }

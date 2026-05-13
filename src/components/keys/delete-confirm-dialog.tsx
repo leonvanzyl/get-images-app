@@ -55,48 +55,39 @@ export function DeleteConfirmDialog({ apiKey, onClose, onConfirm }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="gap-5 rounded-none border-border bg-card sm:max-w-[480px]">
+      <DialogContent className="gap-5 rounded-[20px] border bg-card p-8 sm:max-w-md">
         {apiKey && (
           <>
-            <DialogHeader>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                Delete key
-              </p>
-              <DialogTitle className="font-display text-2xl font-semibold tracking-tight">
+            <DialogHeader className="space-y-2">
+              <DialogTitle className="font-display text-2xl font-medium tracking-tight">
                 Delete this key?
               </DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed">
+              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
                 This permanently removes the key from your account.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-3 border border-border/60 bg-background/40 p-4">
+            <div className="space-y-2 rounded-[10px] border bg-secondary p-4 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                  Name
-                </span>
-                <span className="truncate text-sm text-foreground">
-                  {apiKey.name}
-                </span>
+                <span className="text-muted-foreground">Name</span>
+                <span className="truncate text-foreground">{apiKey.name}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                  Prefix
-                </span>
-                <span className="font-mono text-xs text-foreground">
+                <span className="text-muted-foreground">Prefix</span>
+                <code className="font-mono text-xs text-foreground">
                   {apiKey.prefix}
-                </span>
+                </code>
               </div>
             </div>
 
             {requiresTyping && (
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label
                   htmlFor="delete-key-confirm"
-                  className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
+                  className="text-sm font-medium"
                 >
                   Type{" "}
-                  <span className="text-foreground">
+                  <span className="font-mono text-xs">
                     &quot;{apiKey.name}&quot;
                   </span>{" "}
                   to confirm
@@ -105,14 +96,14 @@ export function DeleteConfirmDialog({ apiKey, onClose, onConfirm }: Props) {
                   id="delete-key-confirm"
                   value={typed}
                   onChange={(event) => setTyped(event.target.value)}
-                  className="h-11 rounded-none border-border bg-background font-mono text-sm"
+                  className="h-10 rounded-[10px]"
                   autoComplete="off"
                   spellCheck={false}
                   aria-describedby="delete-key-confirm-help"
                 />
                 <p
                   id="delete-key-confirm-help"
-                  className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70"
+                  className="text-xs text-muted-foreground"
                 >
                   Active keys require a name match before deletion.
                 </p>
@@ -120,12 +111,7 @@ export function DeleteConfirmDialog({ apiKey, onClose, onConfirm }: Props) {
             )}
 
             <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={closeAndReset}
-                className="rounded-none font-mono text-xs uppercase tracking-[0.18em]"
-              >
+              <Button type="button" variant="ghost" onClick={closeAndReset}>
                 Cancel
               </Button>
               <Button
@@ -133,7 +119,6 @@ export function DeleteConfirmDialog({ apiKey, onClose, onConfirm }: Props) {
                 variant="destructive"
                 onClick={handleConfirm}
                 disabled={!canDelete}
-                className="rounded-none font-mono text-xs uppercase tracking-[0.18em]"
               >
                 Delete forever
               </Button>

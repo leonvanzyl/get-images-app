@@ -7,12 +7,15 @@ import { callProvider } from "./providers";
 import type { GenerateImageInput, GenerateImageResult } from "./types";
 
 export { listModels, getModel } from "./models";
+export { SUPPORTED_ASPECT_RATIOS } from "./types";
 export type {
-  ImageModelDefinition,
+  AspectRatio,
+  GeneratedImage,
   GenerateImageInput,
   GenerateImageResult,
-  GeneratedImage,
+  ImageModelDefinition,
   ProviderId,
+  ThinkingLevel,
 } from "./types";
 
 export async function generate(
@@ -55,19 +58,22 @@ export async function generate(
 
   const now = new Date();
 
-  const [inserted] = await db.insert(generation).values({
-    userId: input.userId,
-    prompt: trimmedPrompt,
-    modelId: input.modelId,
-    providerId,
-    aspectRatio: input.aspectRatio ?? "1:1",
-    style: input.style ?? null,
-    seed: input.seed ?? null,
-    imageUrl: url,
-    mediaType: generatedFile.mediaType ?? "image/png",
-    creditCost: input.creditCost ?? null,
-    createdAt: now,
-  }).returning({ id: generation.id });
+  const [inserted] = await db
+    .insert(generation)
+    .values({
+      userId: input.userId,
+      prompt: trimmedPrompt,
+      modelId: input.modelId,
+      providerId,
+      aspectRatio: input.aspectRatio ?? "1:1",
+      style: input.style ?? null,
+      thinkingLevel: input.thinkingLevel ?? null,
+      imageUrl: url,
+      mediaType: generatedFile.mediaType ?? "image/png",
+      creditCost: input.creditCost ?? null,
+      createdAt: now,
+    })
+    .returning({ id: generation.id });
 
   return {
     image: {
@@ -78,7 +84,7 @@ export async function generate(
       providerId,
       aspectRatio: input.aspectRatio ?? "1:1",
       ...(input.style ? { style: input.style } : {}),
-      ...(input.seed !== undefined ? { seed: input.seed } : {}),
+      ...(input.thinkingLevel ? { thinkingLevel: input.thinkingLevel } : {}),
       createdAt: now.toISOString(),
     },
   };

@@ -12,42 +12,26 @@ export default async function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col justify-center px-6 py-16 sm:px-10 lg:px-16">
-      <div className="mx-auto w-full max-w-md">
-        <div className="mb-10 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-          <span
-            aria-hidden="true"
-            className="inline-block size-2 rounded-full bg-primary animate-cursor-blink shadow-[0_0_8px_oklch(0.9_0.22_130/0.6)]"
-          />
-          ● Get Images
-          <span aria-hidden="true" className="h-3 w-px bg-border" />
-          <span className="text-foreground/70">Account recovery</span>
-        </div>
-
-        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
-          Recovery — Request reset
-        </p>
-        <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
-          Lost your password.
+    <div className="space-y-6">
+      <header className="text-center">
+        <h1 className="font-display text-3xl font-medium tracking-tight">
+          Forgot your password?
         </h1>
-        <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-          Tell us the email on file and we&apos;ll mail a one-time reset link.
+        <p className="mt-2 text-muted-foreground">
+          Tell us your email and we&apos;ll send a reset link.
         </p>
+      </header>
 
-        <div className="mt-10">
-          <ForgotPasswordForm />
-        </div>
+      <ForgotPasswordForm />
 
-        <p className="mt-10 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          Remembered it?{" "}
-          <Link
-            href="/login"
-            className="text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
-          >
-            Back to sign in →
-          </Link>
-        </p>
-      </div>
+      <p className="text-center text-sm text-muted-foreground">
+        <Link
+          href="/login"
+          className="text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
+        >
+          Back to sign in →
+        </Link>
+      </p>
     </div>
   )
 }

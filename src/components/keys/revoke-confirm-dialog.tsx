@@ -40,48 +40,37 @@ export function RevokeConfirmDialog({ apiKey, onClose, onConfirm }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="gap-5 rounded-none border-border bg-card sm:max-w-[460px]">
+      <DialogContent className="gap-5 rounded-[20px] border bg-card p-8 sm:max-w-md">
         {apiKey && (
           <>
-            <DialogHeader>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                Revoke key
-              </p>
-              <DialogTitle className="font-display text-2xl font-semibold tracking-tight">
+            <DialogHeader className="space-y-2">
+              <DialogTitle className="font-display text-2xl font-medium tracking-tight">
                 Revoke this key?
               </DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed">
+              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
                 Agents using this key will stop working immediately. You
                 can&apos;t undo this.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col gap-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                Key
-              </p>
-              <span
-                className="inline-flex w-fit items-center border border-border/60 bg-background/60 px-2.5 py-1 font-mono text-xs tracking-tight text-foreground"
+            <div className="flex items-center justify-between gap-3 rounded-[10px] border bg-secondary px-3 py-2.5">
+              <span className="text-xs text-muted-foreground">Key</span>
+              <code
+                className="font-mono text-xs text-foreground"
                 aria-label={`Key prefix ${apiKey.prefix}`}
               >
                 {apiKey.prefix}
-              </span>
+              </code>
             </div>
 
             <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={onClose}
-                className="rounded-none font-mono text-xs uppercase tracking-[0.18em]"
-              >
+              <Button type="button" variant="ghost" onClick={onClose}>
                 Cancel
               </Button>
               <Button
                 type="button"
                 variant="destructive"
                 onClick={handleConfirm}
-                className="rounded-none font-mono text-xs uppercase tracking-[0.18em]"
               >
                 Revoke key
               </Button>

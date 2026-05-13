@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, LayoutDashboard } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,14 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSession, signOut } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 
 export function UserProfile() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
   if (isPending) {
-    return <div>Loading...</div>;
+    return <div className="size-9" aria-hidden="true" />;
   }
 
   if (!session) {
@@ -42,27 +42,36 @@ export function UserProfile() {
     router.refresh();
   };
 
+  const fallbackInitial = (
+    session.user?.name?.[0] ||
+    session.user?.email?.[0] ||
+    "U"
+  ).toUpperCase();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="size-8 cursor-pointer hover:opacity-80 transition-opacity">
-          <AvatarImage
-            src={session.user?.image || ""}
-            alt={session.user?.name || "User"}
-            referrerPolicy="no-referrer"
-          />
-          <AvatarFallback>
-            {(
-              session.user?.name?.[0] ||
-              session.user?.email?.[0] ||
-              "U"
-            ).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <button
+          type="button"
+          aria-label="Open account menu"
+          className="rounded-full outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2"
+        >
+          <Avatar className="size-9">
+            <AvatarImage
+              src={session.user?.image || ""}
+              alt={session.user?.name || "User"}
+              referrerPolicy="no-referrer"
+            />
+            <AvatarFallback>{fallbackInitial}</AvatarFallback>
+          </Avatar>
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent
+        align="end"
+        className="w-60 rounded-xl border bg-popover p-1 shadow-lg"
+      >
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
+          <div className="flex flex-col gap-0.5">
             <p className="text-sm font-medium leading-none">
               {session.user?.name}
             </p>
@@ -73,21 +82,21 @@ export function UserProfile() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard" className="flex items-center">
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            Dashboard
+          <Link href="/profile" className="flex items-center">
+            <User className="mr-2 size-4" />
+            Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center">
-            <User className="mr-2 h-4 w-4" />
-            Your Profile
+          <Link href="/dashboard" className="flex items-center">
+            <LayoutDashboard className="mr-2 size-4" />
+            Dashboard
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} variant="destructive">
-          <LogOut className="mr-2 h-4 w-4" />
-          Log out
+          <LogOut className="mr-2 size-4" />
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

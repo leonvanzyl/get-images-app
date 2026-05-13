@@ -93,7 +93,10 @@ export const generation = pgTable(
     providerId: text("provider_id").notNull(),
     aspectRatio: text("aspect_ratio").notNull(),
     style: text("style"),
+    // Legacy column — image models don't accept seed; kept nullable for backfill.
     seed: integer("seed"),
+    // "default" or "deep" — only populated for thinking-capable models.
+    thinkingLevel: text("thinking_level"),
     imageUrl: text("image_url").notNull(),
     mediaType: text("media_type").notNull(),
     creditCost: integer("credit_cost"),
@@ -149,6 +152,9 @@ export const modelPricing = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     modelId: text("model_id").notNull(),
     creditCost: integer("credit_cost").notNull(),
+    // Effective cost when the user selects "deep" thinking. Null = same as creditCost
+    // (or model doesn't support thinking).
+    thinkingHighCreditCost: integer("thinking_high_credit_cost"),
     isActive: boolean("is_active").default(true),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

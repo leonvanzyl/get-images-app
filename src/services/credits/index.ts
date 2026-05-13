@@ -19,12 +19,18 @@ export async function getBalance(userId: string): Promise<number> {
 }
 
 /**
- * Look up the credit cost for a given model.
- * Throws if the model has no active pricing row.
+ * Look up the credit cost for a model. When `deep` thinking is requested and
+ * the model has a deep-thinking surcharge configured, that higher cost is used.
  */
-export async function getModelCreditCost(modelId: string): Promise<number> {
+export async function getModelCreditCost(
+  modelId: string,
+  thinkingLevel?: "default" | "deep",
+): Promise<number> {
   const [row] = await db
-    .select({ creditCost: modelPricing.creditCost })
+    .select({
+      creditCost: modelPricing.creditCost,
+      thinkingHighCreditCost: modelPricing.thinkingHighCreditCost,
+    })
     .from(modelPricing)
     .where(eq(modelPricing.modelId, modelId));
 
@@ -32,19 +38,28 @@ export async function getModelCreditCost(modelId: string): Promise<number> {
     throw new Error(`No active pricing found for model "${modelId}".`);
   }
 
+  if (thinkingLevel === "deep" && row.thinkingHighCreditCost != null) {
+    return row.thinkingHighCreditCost;
+  }
+
   return row.creditCost;
 }
 
+export type ModelPricingRow = {
+  modelId: string;
+  creditCost: number;
+  thinkingHighCreditCost: number | null;
+};
+
 /**
- * Return all active model pricing rows.
+ * Return all active model pricing rows, including deep-thinking surcharges.
  */
-export async function getAllModelPricing(): Promise<
-  Array<{ modelId: string; creditCost: number }>
-> {
+export async function getAllModelPricing(): Promise<ModelPricingRow[]> {
   return db
     .select({
       modelId: modelPricing.modelId,
       creditCost: modelPricing.creditCost,
+      thinkingHighCreditCost: modelPricing.thinkingHighCreditCost,
     })
     .from(modelPricing)
     .where(eq(modelPricing.isActive, true));
@@ -60,7 +75,6 @@ export async function deductCredit(
 ): Promise<void> {
   await db.transaction(async (tx) => {
     // Acquire a row-level lock to prevent concurrent deductions.
-    // postgres-js returns an array-like RowList directly from execute().
     const rows = await tx.execute(
       sql`SELECT * FROM credit_balance WHERE user_id = ${userId} FOR UPDATE`,
     );
@@ -69,11 +83,10 @@ export async function deductCredit(
 
     if (!row || row.balance < amount) {
       throw new InsufficientCreditsError(
-        "No credits remaining on this reel. Add credits to resume production.",
+        "You're out of credits. Add more to keep generating.",
       );
     }
 
-    // Decrement the balance
     await tx
       .update(creditBalance)
       .set({
@@ -82,7 +95,6 @@ export async function deductCredit(
       })
       .where(eq(creditBalance.userId, userId));
 
-    // Record the transaction
     await tx.insert(creditTransaction).values({
       userId,
       amount: -amount,
@@ -101,7 +113,6 @@ export async function refundCredit(
   description?: string,
 ): Promise<void> {
   await db.transaction(async (tx) => {
-    // Increment the balance
     await tx
       .update(creditBalance)
       .set({
@@ -110,7 +121,6 @@ export async function refundCredit(
       })
       .where(eq(creditBalance.userId, userId));
 
-    // Record the transaction
     await tx.insert(creditTransaction).values({
       userId,
       amount,
@@ -131,7 +141,6 @@ export async function addCredits(
   referenceId?: string,
 ): Promise<void> {
   await db.transaction(async (tx) => {
-    // Idempotency guard — prevent duplicate credits from webhook retries
     if (referenceId) {
       const [existing] = await tx
         .select({ id: creditTransaction.id })
@@ -148,7 +157,6 @@ export async function addCredits(
       }
     }
 
-    // Upsert the balance row — insert if new, increment if existing
     await tx
       .insert(creditBalance)
       .values({
@@ -163,7 +171,6 @@ export async function addCredits(
         },
       });
 
-    // Record the transaction
     await tx.insert(creditTransaction).values({
       userId,
       amount,

@@ -8,11 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { resetPassword } from "@/lib/auth-client"
 
-const INPUT_CLASSES =
-  "h-12 rounded-none border-border/60 bg-input px-3 text-sm shadow-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-primary/30 focus-visible:ring-[2px]"
-
-const LABEL_CLASSES =
-  "font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+const INPUT_CLASSES = "h-10 rounded-[10px]"
 
 export function ResetPasswordForm() {
   const router = useRouter()
@@ -25,14 +21,19 @@ export function ResetPasswordForm() {
   const [formError, setFormError] = useState("")
   const [isPending, setIsPending] = useState(false)
 
+  // Token-missing / token-invalid is a hard error state — we replace the form
+  // with a clear message and a path back to request a fresh link.
   if (error === "invalid_token" || !token) {
     return (
-      <div className="w-full space-y-6">
-        <div className="border border-destructive/40 bg-destructive/5 p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-destructive">
-            <span className="mr-2">!</span>Link invalid
+      <div className="w-full space-y-4">
+        <div
+          role="alert"
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-center"
+        >
+          <p className="font-display text-lg font-medium text-destructive">
+            Link invalid
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {error === "invalid_token"
               ? "This password reset link is invalid or has expired."
               : "No reset token was provided in the URL."}
@@ -41,7 +42,7 @@ export function ResetPasswordForm() {
         <Link href="/forgot-password" className="block">
           <Button
             variant="outline"
-            className="h-12 w-full rounded-none border-border/60 font-mono text-[11px] uppercase tracking-[0.22em]"
+            className="h-10 w-full rounded-[10px]"
           >
             Request a new link
           </Button>
@@ -55,12 +56,12 @@ export function ResetPasswordForm() {
     setFormError("")
 
     if (password !== confirmPassword) {
-      setFormError("Passwords do not match")
+      setFormError("Passwords do not match.")
       return
     }
 
     if (password.length < 8) {
-      setFormError("Password must be at least 8 characters")
+      setFormError("Password must be at least 8 characters.")
       return
     }
 
@@ -85,11 +86,9 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="password" className={LABEL_CLASSES}>
-          New password
-        </Label>
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="password">New password</Label>
         <Input
           id="password"
           type="password"
@@ -101,10 +100,9 @@ export function ResetPasswordForm() {
           className={INPUT_CLASSES}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword" className={LABEL_CLASSES}>
-          Confirm new password
-        </Label>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="confirmPassword">Confirm new password</Label>
         <Input
           id="confirmPassword"
           type="password"
@@ -118,27 +116,17 @@ export function ResetPasswordForm() {
       </div>
 
       {formError && (
-        <p className="font-mono text-xs uppercase tracking-wide text-destructive">
-          <span aria-hidden="true" className="mr-2">
-            !
-          </span>
+        <p role="alert" className="text-xs text-destructive">
           {formError}
         </p>
       )}
 
       <Button
         type="submit"
-        size="lg"
         disabled={isPending}
-        className="group glow-lime h-12 w-full rounded-none font-mono text-[11px] uppercase tracking-[0.22em]"
+        className="h-10 w-full rounded-[10px]"
       >
         {isPending ? "Updating…" : "Update password"}
-        <span
-          aria-hidden="true"
-          className="ml-1 transition-transform group-hover:translate-x-0.5"
-        >
-          →
-        </span>
       </Button>
     </form>
   )

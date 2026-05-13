@@ -1,134 +1,71 @@
+import { Globe, KeyRound, Sparkles } from "lucide-react";
+
 /**
- * MCP overview — two-column section that opens the Integrations page. Left
- * column explains what MCP is and the feature triad we want users to retain;
- * the right column is a "tools exposed" panel that mirrors how an MCP client
- * advertises a server's surface (signature + return type + endpoint + auth).
+ * Intro card for the Integrations page.
+ *
+ * One short paragraph that explains MCP in plain language, followed by three
+ * concrete feature bullets (icon + text). No "coming soon" placeholders, no
+ * tools-exposed sidebar — that level of API detail belongs in the docs.
  */
 
-const FEATURES: Array<{ label: string; body: string }> = [
+const FEATURES: Array<{
+  icon: typeof Globe;
+  title: string;
+  body: string;
+}> = [
   {
-    label: "REMOTE MCP (CONTEXT7-STYLE)",
-    body: "We run a hosted MCP server: type remote, URL, and headers — like Context 7 — so you paste config instead of installing a binary.",
+    icon: Globe,
+    title: "Remote MCP server",
+    body: "Hosted by us. Paste a tiny JSON snippet — no binary to install, no local process to babysit.",
   },
   {
-    label: "PER-KEY USAGE & QUOTAS",
-    body: "Each key tracks its own activity, so you can revoke a noisy integration without breaking the rest.",
+    icon: KeyRound,
+    title: "Per-key usage",
+    body: "Each API key tracks its own activity, so you can revoke a noisy integration without breaking the rest.",
   },
   {
-    label: "FINE-GRAINED PERMISSIONS",
-    body: "Coming soon: scope keys to specific tools — let agents read but not generate, or vice versa.",
+    icon: Sparkles,
+    title: "Pick a model per request",
+    body: "Set the GET_IMAGES_MODEL header to choose the image backend (e.g. openai/gpt-image-2, google/nano-banana-pro).",
   },
-];
-
-const TOOLS: Array<{ signature: string; returns: string }> = [
-  {
-    signature: "generate_image(prompt, aspect?, model?, seed?)",
-    returns: "image",
-  },
-  { signature: "list_generations(limit?)", returns: "image[]" },
-  { signature: "get_image(id)", returns: "image" },
 ];
 
 export function McpOverview() {
   return (
-    <section
-      aria-labelledby="mcp-overview-heading"
-      className="grid gap-8 lg:grid-cols-5 lg:gap-10"
-    >
-      <div className="flex flex-col gap-6 lg:col-span-3">
-        <div className="space-y-3">
-          <p
-            id="mcp-overview-heading"
-            className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary"
-          >
-            01 — WHAT IS MCP
-          </p>
-          <p className="max-w-prose text-base leading-relaxed text-foreground/85">
-            Model Context Protocol (MCP) is an open standard for letting AI
-            agents call tools and read data from external services. Get Images
-            exposes a remote MCP server (Context 7–style config: type, url,
-            headers) with three tools — your agent can ask for an image, list
-            past generations, or fetch a specific one — using your Get Images API
-            key. Optional{" "}
-            <span className="font-mono text-foreground/80">
-              GET_IMAGES_MODEL
-            </span>{" "}
-            header picks the image backend (
-            <span className="text-foreground/80">openai/image-2</span>,{" "}
-            <span className="text-foreground/80">google/nanobanana-pro</span>
-            ).
-          </p>
-        </div>
+    <section aria-labelledby="mcp-overview-heading" className="rounded-2xl border bg-card p-6">
+      <h2 id="mcp-overview-heading" className="font-display text-lg font-medium">
+        What is MCP?
+      </h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+        Model Context Protocol is an open standard for letting AI agents call
+        tools from external services. Drop the snippet for your client below,
+        plug in an API key, and your agent can generate, list, and fetch
+        images.
+      </p>
 
-        <ul className="grid gap-3 sm:grid-cols-3" role="list">
-          {FEATURES.map((feature) => (
-            <li
-              key={feature.label}
-              className="flex flex-col gap-2 border border-border/60 bg-card/40 p-4"
-            >
-              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
-                {feature.label}
-              </span>
-              <span className="text-xs leading-relaxed text-muted-foreground">
-                {feature.body}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <aside
-        aria-label="Tools exposed by the Get Images MCP server"
-        className="lg:col-span-2"
-      >
-        <div className="rounded-none border border-border/60 bg-card/40">
-          <div className="flex items-center justify-between border-b border-border/60 px-4 py-2.5">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-              Tools exposed
-            </p>
-            <p
-              aria-hidden="true"
-              className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/60 tabular-nums"
-            >
-              03
-            </p>
-          </div>
-
-          <ul className="divide-y divide-border/60" role="list">
-            {TOOLS.map((tool) => (
-              <li
-                key={tool.signature}
-                className="overflow-x-auto px-4 py-3 font-mono text-[12px] leading-relaxed whitespace-nowrap"
+      <ul className="mt-6 grid gap-4 sm:grid-cols-3" role="list">
+        {FEATURES.map((feature) => {
+          const Icon = feature.icon;
+          return (
+            <li key={feature.title} className="flex items-start gap-3">
+              <span
+                aria-hidden="true"
+                className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
               >
-                <span className="text-foreground/90">{tool.signature}</span>
-                <span
-                  aria-hidden="true"
-                  className="mx-1.5 text-muted-foreground"
-                >
-                  →
-                </span>
-                <span className="text-primary">{tool.returns}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="space-y-1.5 border-t border-border/60 px-4 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-              ENDPOINT —{" "}
-              <span className="text-foreground/80">
-                https://mcp.get-images.dev/mcp
+                <Icon className="size-4" />
               </span>
-            </p>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-              AUTH —{" "}
-              <span className="text-foreground/80">
-                GET_IMAGES_API_KEY header (+ optional GET_IMAGES_MODEL:
-                openai/image-2 · google/nanobanana-pro)
-              </span>
-            </p>
-          </div>
-        </div>
-      </aside>
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium text-foreground">
+                  {feature.title}
+                </p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {feature.body}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }

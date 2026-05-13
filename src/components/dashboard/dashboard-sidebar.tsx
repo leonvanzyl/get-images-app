@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ChevronUp,
-  CreditCard,
+  Coins,
+  Images,
   KeyRound,
-  Library,
   LogOut,
+  MoonStar,
+  MoreHorizontal,
   Plug,
   Sparkles,
+  Sun,
   User as UserIcon,
   type LucideIcon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -34,34 +37,23 @@ export type DashboardUser = {
 type NavItem = {
   href: string;
   label: string;
-  frame: string;
   icon: LucideIcon;
 };
 
+// Order is intentional — Generate is the primary action, then content, then
+// account-adjacent surfaces.
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Generate", frame: "01", icon: Sparkles },
-  {
-    href: "/dashboard/library",
-    label: "Library",
-    frame: "02",
-    icon: Library,
-  },
-  { href: "/dashboard/keys", label: "API Keys", frame: "03", icon: KeyRound },
-  {
-    href: "/dashboard/integrations",
-    label: "Integrations",
-    frame: "04",
-    icon: Plug,
-  },
-  { href: "/pricing", label: "Buy Credits", frame: "05", icon: CreditCard },
+  { href: "/dashboard", label: "Generate", icon: Sparkles },
+  { href: "/dashboard/library", label: "Library", icon: Images },
+  { href: "/dashboard/keys", label: "API keys", icon: KeyRound },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
 ];
 
 function isActiveRoute(pathname: string, href: string): boolean {
+  // The Generate page lives at the dashboard root and must match exactly so
+  // every nested dashboard route doesn't keep it highlighted.
   if (href === "/dashboard") {
     return pathname === "/dashboard";
-  }
-  if (href === "/pricing") {
-    return pathname === "/pricing";
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -82,6 +74,7 @@ export function DashboardSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { setTheme, resolvedTheme } = useTheme();
   // Normalize the optional callback to a stable handler so React/Next.js
   // typings stay happy under `exactOptionalPropertyTypes`.
   const handleNavigate = onNavigate ?? (() => {});
@@ -92,32 +85,34 @@ export function DashboardSidebar({
     router.refresh();
   };
 
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  };
+
   return (
     <nav
       aria-label="Dashboard navigation"
-      className="flex h-full flex-col"
+      className="flex h-full flex-col bg-sidebar text-sidebar-foreground"
     >
+      {/* Wordmark — calm, no blinking dot or version tag. */}
       <div className="px-6 pt-6 pb-8">
         <Link
           href="/dashboard"
           onClick={handleNavigate}
-          className="group inline-flex items-center gap-2"
+          className="inline-flex items-center gap-2.5"
           aria-label="Get Images — Dashboard home"
         >
           <span
             aria-hidden="true"
-            className="inline-block size-2 rounded-full bg-primary shadow-[0_0_8px_oklch(0.9_0.22_130/0.6)] animate-cursor-blink"
+            className="inline-block size-5 rounded-[6px] bg-primary"
           />
-          <span className="font-mono text-xs uppercase tracking-[0.18em] text-foreground">
-            Get Images
-          </span>
-          <span aria-hidden="true" className="h-3 w-px bg-border" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            / V0.1
+          <span className="font-display text-lg font-medium tracking-tight text-foreground">
+            get images
           </span>
         </Link>
       </div>
 
+      {/* Primary navigation. Sentence case, plain icons, no frame numbers. */}
       <ul className="flex-1 space-y-1 px-3" role="list">
         {NAV_ITEMS.map((item) => {
           const active = isActiveRoute(pathname, item.href);
@@ -129,75 +124,52 @@ export function DashboardSidebar({
                 onClick={handleNavigate}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "group relative flex items-center gap-3 rounded-sm px-3 py-2.5 font-mono text-xs uppercase tracking-[0.18em] transition-colors",
-                  "text-muted-foreground hover:text-foreground hover:bg-accent/40",
-                  active &&
-                    "border-l-2 border-primary -ml-px text-primary bg-accent/30 hover:text-primary",
+                  "flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm transition-colors",
+                  active
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "w-6 shrink-0 text-[10px] tracking-[0.16em]",
-                    active ? "text-primary/80" : "text-muted-foreground/60",
-                  )}
-                >
-                  {item.frame}
-                </span>
-                <Icon
-                  aria-hidden="true"
-                  className={cn(
-                    "size-4 shrink-0",
-                    active ? "text-primary" : "text-muted-foreground",
-                  )}
-                />
-                <span className="flex items-center gap-1.5">
-                  {active && (
-                    <span
-                      aria-hidden="true"
-                      className="text-primary/80"
-                    >
-                      [
-                    </span>
-                  )}
-                  <span>{item.label}</span>
-                  {active && (
-                    <span
-                      aria-hidden="true"
-                      className="text-primary/80"
-                    >
-                      ]
-                    </span>
-                  )}
-                </span>
+                <Icon aria-hidden="true" className="size-4 shrink-0" />
+                <span>{item.label}</span>
               </Link>
             </li>
           );
         })}
       </ul>
 
-      <Link
-        href="/pricing"
-        onClick={handleNavigate}
-        className="mx-3 mb-4 mt-6 block rounded-sm border border-border/60 bg-background/40 p-4 transition-colors hover:border-primary/60"
-      >
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          Credits on reel
-        </p>
-        <p className="mt-2 font-mono text-2xl text-foreground tabular-nums">
-          {String(creditBalance).padStart(3, "0")}
-        </p>
-        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-          Buy more →
-        </p>
-      </Link>
+      {/* Credit balance card — soft, friendly, with a clear path to top up. */}
+      <div className="px-3 pt-6 pb-3">
+        <div className="rounded-2xl border bg-card p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Coins aria-hidden="true" className="size-4" />
+            <span className="text-xs">Balance</span>
+          </div>
+          <p className="mt-2 text-foreground">
+            <span className="font-mono text-2xl tracking-tight">
+              {creditBalance}
+            </span>
+            <span className="ml-1.5 text-sm text-muted-foreground">
+              credits
+            </span>
+          </p>
+          <Link
+            href="/pricing"
+            onClick={handleNavigate}
+            className="mt-3 inline-flex text-sm font-medium text-primary transition-colors hover:text-primary/80"
+          >
+            Buy more
+          </Link>
+        </div>
+      </div>
 
-      <div className="border-t border-border px-3 py-3">
+      {/* User block — avatar + name + small more-menu trigger. */}
+      <div className="px-3 pb-4">
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
-              "group flex w-full items-center gap-3 rounded-sm px-2 py-2 text-left",
-              "transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "flex w-full items-center gap-3 rounded-[10px] px-2 py-2 text-left",
+              "transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2",
             )}
           >
             <Avatar className="size-8">
@@ -214,28 +186,30 @@ export function DashboardSidebar({
               <p className="truncate text-sm font-medium text-foreground">
                 {user.name ?? "Account"}
               </p>
-              <p className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                {user.email ?? ""}
-              </p>
-            </div>
-            <ChevronUp
-              aria-hidden="true"
-              className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180"
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            side="top"
-            className="w-56"
-          >
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user.name}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
+              {user.email ? (
+                <p className="truncate text-xs text-muted-foreground">
                   {user.email}
                 </p>
+              ) : null}
+            </div>
+            <MoreHorizontal
+              aria-hidden="true"
+              className="size-4 shrink-0 text-muted-foreground"
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                {user.name ? (
+                  <p className="text-sm font-medium leading-none">
+                    {user.name}
+                  </p>
+                ) : null}
+                {user.email ? (
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
+                ) : null}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -245,16 +219,31 @@ export function DashboardSidebar({
                 onClick={handleNavigate}
                 className="flex items-center"
               >
-                <UserIcon className="mr-2 h-4 w-4" />
+                <UserIcon className="mr-2 size-4" />
                 Profile
               </Link>
             </DropdownMenuItem>
+            {/*
+              Theme toggle lives inside the user menu so the sidebar stays
+              quiet. We avoid `onSelect` default close — letting the menu
+              dismiss after toggling matches user expectation.
+            */}
+            <DropdownMenuItem onClick={toggleTheme}>
+              {resolvedTheme === "dark" ? (
+                <>
+                  <Sun className="mr-2 size-4" />
+                  Light mode
+                </>
+              ) : (
+                <>
+                  <MoonStar className="mr-2 size-4" />
+                  Dark mode
+                </>
+              )}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              variant="destructive"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
+            <DropdownMenuItem onClick={handleSignOut} variant="destructive">
+              <LogOut className="mr-2 size-4" />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

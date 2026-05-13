@@ -1,4 +1,14 @@
-import type { ImageModelDefinition } from "./types";
+import type { AspectRatio, ImageModelDefinition } from "./types";
+
+const COMMON_RATIOS: AspectRatio[] = [
+  "1:1",
+  "3:2",
+  "2:3",
+  "16:9",
+  "9:16",
+  "4:3",
+  "3:4",
+];
 
 export const IMAGE_MODELS: ImageModelDefinition[] = [
   {
@@ -6,35 +16,42 @@ export const IMAGE_MODELS: ImageModelDefinition[] = [
     providerId: "openai",
     modelId: "gpt-image-1.5",
     name: "GPT Image 1.5",
-    description: "Fast, cost-effective image generation.",
+    description: "Fast and cost-effective. Great for everyday work.",
+    aspectRatios: COMMON_RATIOS,
   },
   {
     id: "openai:gpt-image-2",
     providerId: "openai",
     modelId: "gpt-image-2",
     name: "GPT Image 2",
-    description: "High-fidelity, prompt-adherent generation.",
+    description: "High-fidelity, prompt-adherent. The premium OpenAI option.",
+    aspectRatios: COMMON_RATIOS,
   },
   {
     id: "google:gemini-2.5-flash-image",
     providerId: "google",
     modelId: "gemini-2.5-flash-image",
     name: "Nano Banana",
-    description: "Fast multimodal image generation.",
+    description: "Fast and friendly. Great speed-to-quality ratio.",
+    aspectRatios: COMMON_RATIOS,
   },
   {
     id: "google:gemini-3.1-flash-image-preview",
     providerId: "google",
     modelId: "gemini-3.1-flash-image-preview",
     name: "Nano Banana 2",
-    description: "Improved quality and coherence.",
+    description: "Improved quality and coherence. Optional deeper thinking.",
+    aspectRatios: COMMON_RATIOS,
+    thinking: { default: "minimal", deep: "high" },
   },
   {
     id: "google:gemini-3-pro-image-preview",
     providerId: "google",
     modelId: "gemini-3-pro-image-preview",
     name: "Nano Banana Pro",
-    description: "Highest-quality Gemini image output.",
+    description: "Top-tier Gemini output. Excellent text and complex scenes.",
+    aspectRatios: [...COMMON_RATIOS, "21:9"],
+    thinking: { default: "low", deep: "high" },
   },
 ];
 

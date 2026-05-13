@@ -1,86 +1,89 @@
 import Link from "next/link";
 import { UserProfile } from "@/components/auth/user-profile";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 import { getOptionalSession } from "@/lib/session";
-import { ModeToggle } from "./ui/mode-toggle";
 
-const NAV_LINKS = [
-  { href: "/#manifesto", label: "Manifesto" },
+type NavLink = { href: string; label: string };
+
+/**
+ * Marketing nav. Anchors point at the in-page sections of the landing route;
+ * the Dashboard link is only injected when a session exists.
+ */
+const NAV_LINKS: NavLink[] = [
+  { href: "/#how-it-works", label: "How it works" },
   { href: "/#examples", label: "Examples" },
-  { href: "/#developers", label: "Developers" },
   { href: "/pricing", label: "Pricing" },
 ];
 
 export async function SiteHeader() {
   const session = await getOptionalSession();
+  const navLinks: NavLink[] = session
+    ? [...NAV_LINKS, { href: "/dashboard", label: "Dashboard" }]
+    : NAV_LINKS;
+
   return (
     <>
+      {/* Skip link — only visible when focused. */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-md"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[10px] focus:border focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:text-foreground focus:shadow-md"
       >
         Skip to main content
       </a>
       <header
-        className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur supports-backdrop-filter:bg-background/60"
+        className="sticky top-0 z-40 h-16 border-b bg-background/80 backdrop-blur"
         role="banner"
       >
-        <nav
-          className="container mx-auto flex items-center justify-between gap-6 px-4 py-3 sm:px-6"
-          aria-label="Main navigation"
-        >
+        <div className="container mx-auto flex h-full max-w-6xl items-center justify-between gap-6 px-6">
+          {/* Wordmark — coral square + name */}
           <Link
             href="/"
             aria-label="Get Images — Go to homepage"
-            className="group flex items-center gap-2"
+            className="flex items-center gap-2.5"
           >
             <span
               aria-hidden="true"
-              className="inline-block size-2 rounded-full bg-primary animate-cursor-blink shadow-[0_0_8px_oklch(0.9_0.22_130/0.6)]"
+              className="inline-block size-6 rounded-md bg-primary"
             />
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-foreground">
-              Get Images
-            </span>
-            <span
-              aria-hidden="true"
-              className="h-3 w-px bg-border"
-            />
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              / V0.1
+            <span className="font-display text-lg font-medium text-foreground">
+              get images
             </span>
           </Link>
 
-          <ul className="hidden items-center gap-6 md:flex" role="list">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            {session && (
-              <li>
-                <Link
-                  href="/dashboard"
-                  className="font-mono text-xs uppercase tracking-[0.14em] text-primary transition-colors hover:text-primary/80"
-                >
-                  Dashboard
-                </Link>
-              </li>
-            )}
-          </ul>
-
-          <div
-            className="flex items-center gap-2 sm:gap-3"
-            role="group"
-            aria-label="User actions"
+          {/* Center nav */}
+          <nav
+            aria-label="Main navigation"
+            className="hidden items-center gap-8 md:flex"
           >
-            <UserProfile />
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right cluster */}
+          <div className="flex items-center gap-2" aria-label="User actions">
+            {session ? (
+              <UserProfile />
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/login">Sign in</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/register">Get started</Link>
+                </Button>
+              </>
+            )}
             <ModeToggle />
           </div>
-        </nav>
+        </div>
       </header>
     </>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ShieldAlert } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -137,26 +137,20 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="gap-5 rounded-none border-border bg-card sm:max-w-[520px]">
+      <DialogContent className="gap-5 rounded-[20px] border bg-card p-8 sm:max-w-md">
         {step === "name" ? (
           <>
-            <DialogHeader>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                New key — 01 / 02
-              </p>
-              <DialogTitle className="font-display text-2xl font-semibold tracking-tight">
-                Create a new API key
+            <DialogHeader className="space-y-2">
+              <DialogTitle className="font-display text-2xl font-medium tracking-tight">
+                New key
               </DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed">
+              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
                 Give it a name you&apos;ll recognize.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-2">
-              <Label
-                htmlFor="create-key-name"
-                className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
-              >
+            <div className="space-y-2">
+              <Label htmlFor="create-key-name" className="text-sm font-medium">
                 Key name
               </Label>
               <Input
@@ -167,11 +161,11 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                 onKeyDown={handleKeyDown}
                 placeholder="Production"
                 maxLength={64}
-                className="h-12 rounded-none border-border bg-background text-base focus-visible:border-primary focus-visible:ring-primary/40"
+                className="h-10 rounded-[10px]"
                 autoComplete="off"
                 spellCheck={false}
               />
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">
+              <p className="text-xs text-muted-foreground">
                 Examples: Production, Dev — local, Cursor agent.
               </p>
             </div>
@@ -181,7 +175,6 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                 type="button"
                 variant="ghost"
                 onClick={() => handleOpenChange(false)}
-                className="rounded-none font-mono text-xs uppercase tracking-[0.18em]"
               >
                 Cancel
               </Button>
@@ -189,42 +182,26 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                 type="button"
                 onClick={handleCreate}
                 disabled={!name.trim()}
-                className="glow-lime rounded-none font-mono text-xs uppercase tracking-[0.18em]"
               >
-                Create →
+                Create key
               </Button>
             </DialogFooter>
           </>
         ) : (
           <>
-            <DialogHeader>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                New key — 02 / 02
-              </p>
-              <DialogTitle className="font-display text-2xl font-semibold tracking-tight">
+            <DialogHeader className="space-y-2">
+              <DialogTitle className="font-display text-2xl font-medium tracking-tight">
                 Save your key now
               </DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed text-destructive">
-                This is the only time you&apos;ll see the full key. After you
-                close this dialog, we&apos;ll only show the prefix.
+              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                This is the only time you&apos;ll see the full key. Copy it
+                into your password manager or MCP config before closing.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex items-start gap-3 border border-destructive/30 bg-destructive/5 p-3">
-              <ShieldAlert
-                aria-hidden="true"
-                className="mt-0.5 size-4 shrink-0 text-destructive"
-              />
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Copy it into your password manager or MCP config before closing.
-              </p>
-            </div>
-
-            <div className="grid gap-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                Your new key
-              </p>
-              <div className="glow-lime flex items-center gap-2 rounded-none border border-primary/40 bg-background/80 p-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Your new key</Label>
+              <div className="flex items-center gap-2 rounded-[10px] border bg-secondary p-2">
                 <code
                   className="flex-1 overflow-x-auto px-2 py-1 font-mono text-sm text-foreground"
                   aria-label="Full API key"
@@ -236,8 +213,8 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                   size="sm"
                   variant="ghost"
                   onClick={handleCopy}
-                  className="rounded-none font-mono text-[10px] uppercase tracking-[0.18em]"
                   aria-label="Copy key to clipboard"
+                  className="gap-1.5"
                 >
                   {copied ? (
                     <Check className="size-3.5" />
@@ -260,16 +237,16 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "relative mt-0.5 grid h-4 w-4 shrink-0 place-items-center border border-border bg-background transition-colors",
+                  "relative mt-0.5 grid size-4 shrink-0 place-items-center rounded border bg-background transition-colors",
                   "peer-checked:border-primary peer-checked:bg-primary",
-                  "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background",
+                  "peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 peer-focus-visible:ring-offset-2",
                 )}
               >
                 {confirmed && (
                   <Check className="size-3 text-primary-foreground" />
                 )}
               </span>
-              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors peer-checked:text-foreground">
+              <span className="text-sm text-muted-foreground transition-colors peer-checked:text-foreground">
                 I&apos;ve stored this key in a safe place.
               </span>
             </label>
@@ -279,7 +256,6 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                 type="button"
                 onClick={handleDone}
                 disabled={!confirmed}
-                className="glow-lime rounded-none font-mono text-xs uppercase tracking-[0.18em]"
               >
                 Done
               </Button>

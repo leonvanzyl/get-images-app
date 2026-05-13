@@ -38,8 +38,6 @@ function pad2(n: number): string {
  * - "never" for null
  * - "just now" / "Nm ago" / "Nh ago" / "Nd ago" for recent values
  * - absolute `YYYY-MM-DD` for anything older than 90 days
- *
- * Inlined so this page has no extra runtime deps; matches the spec exactly.
  */
 function relativeTime(iso: string | null): string {
   if (!iso) return "never";
@@ -84,12 +82,8 @@ function StatusBadge({ status }: { status: MockApiKey["status"] }) {
     return (
       <Badge
         variant="outline"
-        className="gap-1.5 rounded-none border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-primary"
+        className="rounded-full border-transparent bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
       >
-        <span
-          aria-hidden="true"
-          className="inline-block size-1.5 rounded-full bg-primary shadow-[0_0_6px_oklch(0.9_0.22_130/0.7)]"
-        />
         Active
       </Badge>
     );
@@ -97,12 +91,8 @@ function StatusBadge({ status }: { status: MockApiKey["status"] }) {
   return (
     <Badge
       variant="outline"
-      className="gap-1.5 rounded-none border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+      className="rounded-full border-transparent bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
     >
-      <span
-        aria-hidden="true"
-        className="inline-block size-1.5 rounded-full bg-muted-foreground/60"
-      />
       Revoked
     </Badge>
   );
@@ -126,7 +116,7 @@ function CopyPrefixButton({ prefix }: { prefix: string }) {
       size="icon"
       onClick={handleCopy}
       aria-label={`Copy prefix ${prefix}`}
-      className="size-7 rounded-none text-muted-foreground hover:text-primary"
+      className="size-7 text-muted-foreground hover:text-foreground"
     >
       {copied ? (
         <Check className="size-3.5" />
@@ -142,33 +132,27 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
     await copyToClipboard(key.prefix, "Prefix copied");
   }
 
-  function handleRotate() {
-    toast.info("Coming soon", {
-      description: "Key rotation lands with the live API.",
-    });
-  }
-
   return (
-    <div className="border border-border/60 bg-card/40">
+    <div className="overflow-hidden rounded-2xl border bg-card">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
               Name
             </TableHead>
-            <TableHead className="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
               Key
             </TableHead>
-            <TableHead className="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
               Created
             </TableHead>
-            <TableHead className="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
               Last used
             </TableHead>
-            <TableHead className="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
               Status
             </TableHead>
-            <TableHead className="w-12 px-4 py-3 text-right font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <TableHead className="w-12 px-4 py-3 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -180,23 +164,20 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
               <TableRow
                 key={key.id}
                 className={cn(
-                  "group transition-colors hover:bg-muted/20",
-                  // Lime left-accent bar on row hover — applied to the first
-                  // cell so it survives the table's collapse-border behavior.
-                  "[&>td:first-child]:border-l-2 [&>td:first-child]:border-transparent",
-                  "hover:[&>td:first-child]:border-primary",
+                  "transition-colors hover:bg-accent/50",
                   revoked && "opacity-60",
                 )}
               >
-                <TableCell className="px-4 py-4 text-sm font-medium text-foreground">
+                <TableCell className="px-4 py-3.5 text-sm font-medium text-foreground">
                   {key.name}
                 </TableCell>
-                <TableCell className="px-4 py-4">
+                <TableCell className="px-4 py-3.5">
                   <div className="flex items-center gap-2">
                     <code
                       className={cn(
                         "font-mono text-xs text-foreground",
-                        revoked && "line-through decoration-muted-foreground/60",
+                        revoked &&
+                          "line-through decoration-muted-foreground/60",
                       )}
                     >
                       {key.prefix}
@@ -204,44 +185,32 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
                     <CopyPrefixButton prefix={key.prefix} />
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-4 font-mono text-xs text-muted-foreground">
+                <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                   {relativeTime(key.createdAt)}
                 </TableCell>
-                <TableCell className="px-4 py-4 font-mono text-xs text-muted-foreground">
+                <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                   {relativeTime(key.lastUsedAt)}
                 </TableCell>
-                <TableCell className="px-4 py-4">
+                <TableCell className="px-4 py-3.5">
                   <StatusBadge status={key.status} />
                 </TableCell>
-                <TableCell className="px-4 py-4 text-right">
+                <TableCell className="px-4 py-3.5 text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="size-8 rounded-none text-muted-foreground hover:text-foreground"
+                        className="size-8 text-muted-foreground hover:text-foreground"
                         aria-label={`Actions for ${key.name}`}
                       >
                         <MoreHorizontal className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-44 rounded-none border-border bg-popover"
-                    >
-                      <DropdownMenuItem
-                        onClick={() => handleCopyPrefix(key)}
-                        className="rounded-none font-mono text-[11px] uppercase tracking-[0.18em]"
-                      >
+                    <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuItem onClick={() => handleCopyPrefix(key)}>
                         <Copy className="size-3.5" />
                         Copy prefix
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={handleRotate}
-                        className="rounded-none font-mono text-[11px] uppercase tracking-[0.18em]"
-                      >
-                        Rotate
                       </DropdownMenuItem>
                       {!revoked && (
                         <>
@@ -249,7 +218,6 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
                           <DropdownMenuItem
                             variant="destructive"
                             onClick={() => onRevoke(key)}
-                            className="rounded-none font-mono text-[11px] uppercase tracking-[0.18em]"
                           >
                             Revoke
                           </DropdownMenuItem>
@@ -259,7 +227,6 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() => onDelete(key)}
-                        className="rounded-none font-mono text-[11px] uppercase tracking-[0.18em]"
                       >
                         Delete
                       </DropdownMenuItem>

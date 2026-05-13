@@ -1,20 +1,17 @@
-import {
-  Bricolage_Grotesque,
-  Hanken_Grotesk,
-  JetBrains_Mono,
-} from "next/font/google";
+import { Fraunces, Geist, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 
-const fontDisplay = Bricolage_Grotesque({
+const fontDisplay = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
+  axes: ["opsz", "SOFT"],
 });
 
-const fontBody = Hanken_Grotesk({
+const fontBody = Geist({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
@@ -97,11 +94,11 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} grain antialiased min-h-screen flex flex-col`}
+        className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

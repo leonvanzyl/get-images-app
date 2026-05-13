@@ -1,17 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { requestPasswordReset } from "@/lib/auth-client"
 
-const INPUT_CLASSES =
-  "h-12 rounded-none border-border/60 bg-input px-3 text-sm shadow-none transition-colors placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-primary/30 focus-visible:ring-[2px]"
-
-const LABEL_CLASSES =
-  "font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+const INPUT_CLASSES = "h-10 rounded-[10px]"
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("")
@@ -44,34 +39,23 @@ export function ForgotPasswordForm() {
 
   if (success) {
     return (
-      <div className="w-full space-y-6">
-        <div className="border border-primary/30 bg-primary/5 p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
-            <span className="mr-2">✓</span>Reset link dispatched
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            If an account exists for that address, we&apos;ve sent a one-time
-            link. Check your inbox (and your terminal in development).
-          </p>
-        </div>
-        <Link href="/login" className="block">
-          <Button
-            variant="outline"
-            className="h-12 w-full rounded-none border-border/60 font-mono text-[11px] uppercase tracking-[0.22em]"
-          >
-            Back to sign in
-          </Button>
-        </Link>
+      <div
+        role="status"
+        className="rounded-2xl border bg-card p-6 text-center shadow-sm"
+      >
+        <p className="font-display text-lg font-medium">Check your inbox.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          If an account exists for that address, we&apos;ve sent a one-time
+          reset link.
+        </p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="email" className={LABEL_CLASSES}>
-          Email
-        </Label>
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           type="email"
@@ -85,27 +69,17 @@ export function ForgotPasswordForm() {
       </div>
 
       {error && (
-        <p className="font-mono text-xs uppercase tracking-wide text-destructive">
-          <span aria-hidden="true" className="mr-2">
-            !
-          </span>
+        <p role="alert" className="text-xs text-destructive">
           {error}
         </p>
       )}
 
       <Button
         type="submit"
-        size="lg"
         disabled={isPending}
-        className="group glow-lime h-12 w-full rounded-none font-mono text-[11px] uppercase tracking-[0.22em]"
+        className="h-10 w-full rounded-[10px]"
       >
         {isPending ? "Sending…" : "Send reset link"}
-        <span
-          aria-hidden="true"
-          className="ml-1 transition-transform group-hover:translate-x-0.5"
-        >
-          →
-        </span>
       </Button>
     </form>
   )

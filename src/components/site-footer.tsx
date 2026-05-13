@@ -11,7 +11,6 @@ const FOOTER_COLUMNS: FooterColumn[] = [
     links: [
       { label: "Generate", href: "/dashboard" },
       { label: "Library", href: "/dashboard/library" },
-      { label: "API", href: "/dashboard/keys" },
       { label: "Pricing", href: "/pricing" },
     ],
   },
@@ -19,7 +18,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
     heading: "Developers",
     links: [
       { label: "MCP", href: "/dashboard/integrations" },
-      { label: "Examples", href: "/#examples" },
+      { label: "API", href: "/dashboard/keys" },
     ],
   },
   {
@@ -34,49 +33,59 @@ const FOOTER_COLUMNS: FooterColumn[] = [
 export function SiteFooter() {
   return (
     <footer
-      className="mt-24 border-t border-border/60 bg-background/40"
+      className="mt-24 border-t bg-background"
       role="contentinfo"
     >
-      <div className="container mx-auto grid gap-12 px-4 py-12 sm:px-6 md:grid-cols-[1fr_2fr] md:py-16">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="inline-block size-2 rounded-full bg-primary"
-            />
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-foreground">
-              Get Images
-            </span>
+      <div className="container mx-auto max-w-6xl px-6 py-12">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+          {/* Brand column */}
+          <div className="col-span-2 space-y-3 md:col-span-1">
+            <Link
+              href="/"
+              aria-label="Get Images — Go to homepage"
+              className="flex items-center gap-2.5"
+            >
+              <span
+                aria-hidden="true"
+                className="inline-block size-6 rounded-md bg-primary"
+              />
+              <span className="font-display text-lg font-medium text-foreground">
+                get images
+              </span>
+            </Link>
+            <p className="text-sm text-muted-foreground">
+              AI images for humans and agents.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              &copy; 2026 Get Images
+            </p>
           </div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            © 2026 — UI Demo
-          </p>
-        </div>
 
-        <nav
-          aria-label="Footer navigation"
-          className="grid grid-cols-2 gap-8 sm:grid-cols-3"
-        >
+          {/* Link columns */}
           {FOOTER_COLUMNS.map((column) => (
-            <div key={column.heading} className="space-y-3">
-              <h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <nav
+              key={column.heading}
+              aria-label={`${column.heading} links`}
+              className="space-y-3"
+            >
+              <h2 className="text-sm font-medium text-foreground">
                 {column.heading}
               </h2>
-              <ul className="space-y-2" role="list">
+              <ul className="space-y-2">
                 {column.links.map((link) => (
                   <li key={`${column.heading}-${link.label}`}>
                     <Link
                       href={link.href}
-                      className="font-mono text-xs uppercase tracking-[0.14em] text-foreground/80 transition-colors hover:text-primary"
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
-        </nav>
+        </div>
       </div>
     </footer>
   );

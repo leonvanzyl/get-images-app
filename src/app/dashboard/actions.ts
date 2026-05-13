@@ -15,10 +15,12 @@ import {
   deductCredit,
   refundCredit,
   InsufficientCreditsError,
+  type ModelPricingRow,
 } from "@/services/credits";
 import {
   generate,
   listModels,
+  SUPPORTED_ASPECT_RATIOS,
   type GenerateImageResult,
   type ImageModelDefinition,
 } from "@/services/image-generation";
@@ -29,9 +31,9 @@ const generateLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 const generateInputSchema = z.object({
   prompt: z.string().min(1).max(2000),
   modelId: z.string().min(1),
-  aspectRatio: z.string().optional(),
+  aspectRatio: z.enum(SUPPORTED_ASPECT_RATIOS).optional(),
   style: z.string().optional(),
-  seed: z.number().int().min(0).max(999_999).optional(),
+  thinkingLevel: z.enum(["default", "deep"]).optional(),
 });
 
 type ActionSuccess = { success: true; data: GenerateImageResult };
@@ -64,20 +66,18 @@ export async function generateImageAction(
     };
   }
 
-  const { prompt, modelId, aspectRatio, style, seed } = parsed.data;
-  const creditCost = await getModelCreditCost(modelId);
+  const { prompt, modelId, aspectRatio, style, thinkingLevel } = parsed.data;
+  const creditCost = await getModelCreditCost(modelId, thinkingLevel);
 
   try {
-    // Fast pre-check — no lock, just bail early if balance is too low
     const balance = await getBalance(session.user.id);
     if (balance < creditCost) {
       return {
         success: false,
-        error: `Not enough credits. This model requires ${creditCost} credits per generation.`,
+        error: `Not enough credits. This generation costs ${creditCost} credit${creditCost === 1 ? "" : "s"}.`,
       };
     }
 
-    // Authoritative transactional deduction (row-level lock)
     await deductCredit(session.user.id, creditCost);
 
     const result = await generate({
@@ -87,14 +87,12 @@ export async function generateImageAction(
       creditCost,
       ...(aspectRatio !== undefined ? { aspectRatio } : {}),
       ...(style !== undefined ? { style } : {}),
-      ...(seed !== undefined ? { seed } : {}),
+      ...(thinkingLevel !== undefined ? { thinkingLevel } : {}),
     });
 
     revalidatePath("/dashboard", "layout");
     return { success: true, data: result };
   } catch (error) {
-    // Refund the credit if generation failed — but not if the deduction
-    // itself was the source of the error (e.g. race-condition insufficient balance)
     if (!(error instanceof InsufficientCreditsError)) {
       await refundCredit(
         session.user.id,
@@ -121,7 +119,7 @@ export type LibraryImage = {
   model: string;
   aspect: string;
   style: string;
-  seed: number;
+  thinkingLevel: string | null;
   createdAt: string;
   url: string;
   favorite: boolean;
@@ -142,8 +140,8 @@ export async function getLibraryImagesAction(): Promise<LibraryImage[]> {
     prompt: row.prompt,
     model: row.modelId,
     aspect: row.aspectRatio,
-    style: row.style ?? "Cinematic",
-    seed: row.seed ?? 0,
+    style: row.style ?? "Natural",
+    thinkingLevel: row.thinkingLevel,
     createdAt: row.createdAt.toISOString(),
     url: row.imageUrl,
     favorite: false,
@@ -156,9 +154,8 @@ export async function getCreditBalanceAction(): Promise<number> {
   return getBalance(session.user.id);
 }
 
-export async function getModelPricingAction(): Promise<Record<string, number>> {
-  const pricing = await getAllModelPricing();
-  return Object.fromEntries(pricing.map((p) => [p.modelId, p.creditCost]));
+export async function getModelPricingAction(): Promise<ModelPricingRow[]> {
+  return getAllModelPricing();
 }
 
 export async function deleteGenerationAction(

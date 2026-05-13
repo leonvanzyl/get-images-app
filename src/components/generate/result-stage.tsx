@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { Bookmark, Copy, Download, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
-import {
-  aspectDimensions,
-  type AspectRatio,
-  type StylePreset,
-} from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type {
+  AspectRatio,
+  ThinkingLevel,
+} from "@/services/image-generation";
+import type { StyleOption } from "./settings-panel";
 
 type GeneratedImageDisplay = {
   id: string;
@@ -26,29 +27,33 @@ type ResultStageProps = {
   result: GeneratedImageDisplay | null;
   prompt: string;
   aspect: AspectRatio;
-  style: StylePreset;
+  style: StyleOption;
   model: ResultModel;
-  seed: number;
+  thinkingLevel: ThinkingLevel;
+  /** True only when the active model supports thinking — drives metadata visibility. */
+  thinkingSupported: boolean;
   onSave: () => void;
   onRegenerate: () => void;
   onCopyPrompt: () => void;
 };
 
-const CORNER_TICK_CLASS =
-  "pointer-events-none absolute font-mono text-base text-primary/70 select-none";
+const TRUNCATE_LENGTH = 140;
 
-function truncate(value: string, max = 60): string {
-  if (value.length <= max) return value;
-  return `${value.slice(0, max - 1)}…`;
+/**
+ * Convert an AspectRatio string like "16:9" into a CSS `aspect-ratio` value.
+ * Using slashes works in modern browsers and avoids hard-coding pixel dims.
+ */
+function aspectToCss(aspect: string): string {
+  return aspect.replace(":", " / ");
 }
 
 /**
- * Central "film plate" preview area. The aspect ratio is driven by the active
- * `aspect` prop so the plate visually reflects what the user will receive.
- * Three states cover the full generation loop:
- *   - empty:      stand-by microcopy
- *   - generating: a sweep bar moves top-to-bottom over a scan-lined plate
- *   - result:     rendered image with a hover action bar
+ * Center stage for generation output. Three states:
+ *  - empty:      friendly placeholder mocked to the selected aspect ratio
+ *  - generating: same shape with a soft pulse and a status line below
+ *  - result:     the actual image with a hover toolbar in the corner
+ *
+ * Metadata sits beneath the card as quiet supporting text.
  */
 export function ResultStage({
   state,
@@ -57,76 +62,30 @@ export function ResultStage({
   aspect,
   style,
   model,
-  seed,
+  thinkingLevel,
+  thinkingSupported,
   onSave,
   onRegenerate,
   onCopyPrompt,
 }: ResultStageProps) {
-  const dims = aspectDimensions(aspect);
-  const aspectRatio = useMemo(() => `${dims.w} / ${dims.h}`, [dims.w, dims.h]);
+  const aspectRatio = useMemo(() => aspectToCss(aspect), [aspect]);
+  const [promptExpanded, setPromptExpanded] = useState(false);
 
-  const promptForCaption = prompt.trim().length > 0 ? prompt : "—";
+  // Prefer the persisted result's prompt for metadata so the caption stays
+  // stable while the user edits the textarea above.
+  const captionPrompt =
+    state === "result" && result?.prompt ? result.prompt : prompt;
+  const isLongPrompt = captionPrompt.length > TRUNCATE_LENGTH;
+  const displayedPrompt =
+    isLongPrompt && !promptExpanded
+      ? `${captionPrompt.slice(0, TRUNCATE_LENGTH)}…`
+      : captionPrompt;
 
   return (
-    <section
-      aria-label="Result stage"
-      className="flex flex-col gap-5"
-    >
-      {/* Local keyframe — top-to-bottom sweep for the generating state.
-          React 19 hoists <style> elements to <head> automatically. */}
-      <style>{`
-        @keyframes scan-sweep {
-          0% { transform: translateY(-110%); opacity: 0; }
-          15% { opacity: 1; }
-          85% { opacity: 1; }
-          100% { transform: translateY(110%); opacity: 0; }
-        }
-        .scan-sweep-bar {
-          animation: scan-sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-      `}</style>
-
-      <header className="flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          Plate / {state === "result" && result ? result.id : "—"}
-        </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em]">
-          {state === "generating" ? (
-            <span className="text-primary">● Rendering</span>
-          ) : state === "result" ? (
-            <span className="text-primary">● Ready</span>
-          ) : (
-            <span className="text-muted-foreground">○ Idle</span>
-          )}
-        </p>
-      </header>
-
-      <div className="relative">
-        {/* Corner ticks frame the plate. */}
-        <span aria-hidden="true" className={cn(CORNER_TICK_CLASS, "-top-3 -left-3")}>
-          +
-        </span>
-        <span aria-hidden="true" className={cn(CORNER_TICK_CLASS, "-top-3 -right-3")}>
-          +
-        </span>
-        <span
-          aria-hidden="true"
-          className={cn(CORNER_TICK_CLASS, "-bottom-3 -left-3")}
-        >
-          +
-        </span>
-        <span
-          aria-hidden="true"
-          className={cn(CORNER_TICK_CLASS, "-bottom-3 -right-3")}
-        >
-          +
-        </span>
-
+    <section aria-label="Result" className="flex flex-col gap-4">
+      <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
         <div
-          className={cn(
-            "group/plate relative w-full overflow-hidden border border-border bg-card",
-            state !== "result" && "scanlines",
-          )}
+          className="group/result relative w-full"
           style={{ aspectRatio }}
           role="img"
           aria-label={
@@ -134,48 +93,21 @@ export function ResultStage({
               ? `Generated image for: ${result.prompt}`
               : state === "generating"
                 ? "Generating image"
-                : "Standby — no image yet"
+                : "Your image will appear here"
           }
         >
           {state === "empty" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
-              <span
-                aria-hidden="true"
-                className="font-mono text-[10px] uppercase tracking-[0.32em] text-muted-foreground/60"
-              >
-                STAND BY
-              </span>
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Your frame will render here
+            <div className="absolute inset-3 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border px-6 text-center">
+              <p className="font-display text-xl font-medium">
+                Your image will appear here.
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/50">
-                {aspect} · {dims.w}×{dims.h}
+              <p className="text-sm text-muted-foreground">
+                Describe something and hit generate.
               </p>
             </div>
           )}
 
-          {state === "generating" && (
-            <>
-              <div className="absolute inset-0 bg-background/60" />
-              <div
-                aria-hidden="true"
-                className="scan-sweep-bar pointer-events-none absolute inset-x-0 top-0 h-[40%]"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, transparent 0%, oklch(0.9 0.22 130 / 0) 5%, oklch(0.9 0.22 130 / 0.18) 45%, oklch(0.9 0.22 130 / 0.55) 50%, oklch(0.9 0.22 130 / 0.18) 55%, transparent 95%, transparent 100%)",
-                }}
-              />
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 border-t border-primary/30 bg-background/80 px-4 py-2 backdrop-blur-sm">
-                <p className="truncate font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-                  Rendering — {truncate(prompt || "untitled", 60)}
-                </p>
-                <span
-                  aria-hidden="true"
-                  className="inline-block size-1.5 rounded-full bg-primary animate-cursor-blink"
-                />
-              </div>
-            </>
-          )}
+          {state === "generating" && <GeneratingAurora />}
 
           {state === "result" && result && (
             <>
@@ -184,98 +116,168 @@ export function ResultStage({
                 alt={result.prompt}
                 fill
                 unoptimized
-                sizes="(min-width: 1024px) 50vw, 100vw"
+                sizes="(min-width: 1024px) 768px, 100vw"
                 className="object-cover animate-fade-in"
               />
 
-              {/* Hover action bar */}
+              {/* Floating action bar — appears on hover or keyboard focus. */}
               <div
                 className={cn(
-                  "absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between gap-2",
-                  "border-t border-primary/40 bg-background/85 px-3 py-2 backdrop-blur-sm",
-                  "transition-transform duration-200",
-                  "group-hover/plate:translate-y-0 focus-within:translate-y-0",
+                  "absolute bottom-3 right-3 flex flex-wrap items-center gap-1.5",
+                  "opacity-0 transition-opacity duration-200",
+                  "group-hover/result:opacity-100 focus-within:opacity-100",
                 )}
               >
-                <div className="flex flex-wrap gap-1">
-                  <ActionButton onClick={onSave} icon={<Bookmark className="size-3" />}>
-                    Save to library
-                  </ActionButton>
-                  <ActionButton
-                    onClick={onRegenerate}
-                    icon={<RefreshCcw className="size-3" />}
-                  >
-                    Regen
-                  </ActionButton>
-                  <ActionButton
-                    onClick={onCopyPrompt}
-                    icon={<Copy className="size-3" />}
-                  >
-                    Copy prompt
-                  </ActionButton>
-                </div>
-                <DownloadAction url={result.url} />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onCopyPrompt}
+                >
+                  <Copy aria-hidden="true" className="size-4" />
+                  Copy prompt
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onRegenerate}
+                >
+                  <RefreshCcw aria-hidden="true" className="size-4" />
+                  Regenerate
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onSave}
+                >
+                  <Bookmark aria-hidden="true" className="size-4" />
+                  Save
+                </Button>
+                <DownloadButton url={result.url} />
               </div>
             </>
           )}
         </div>
       </div>
 
-      <dl className="grid gap-2 border-t border-border/60 pt-4">
-        <div className="flex items-start gap-3">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground shrink-0 pt-0.5">
-            Prompt —
-          </dt>
-          <dd className="font-mono text-[11px] leading-relaxed text-foreground/90 wrap-break-word">
-            {promptForCaption}
-          </dd>
-        </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          <span className="text-foreground/80">MODEL · {model.name}</span>
-          <span aria-hidden="true" className="text-muted-foreground/40">
-            ·
-          </span>
-          <span>SEED {String(seed).padStart(4, "0")}</span>
-          <span aria-hidden="true" className="text-muted-foreground/40">
-            ·
-          </span>
-          <span>{aspect}</span>
-          <span aria-hidden="true" className="text-muted-foreground/40">
-            ·
-          </span>
-          <span>{style.toUpperCase()}</span>
-        </div>
-      </dl>
+      {/* Metadata row — quiet text below the card. */}
+      {(state === "result" || captionPrompt.trim().length > 0) && (
+        <dl className="space-y-1.5 text-xs text-muted-foreground">
+          {captionPrompt.trim().length > 0 && (
+            <div className="flex flex-col gap-1">
+              <dt className="sr-only">Prompt</dt>
+              <dd className="text-foreground/80">
+                <span className="whitespace-pre-wrap">{displayedPrompt}</span>
+                {isLongPrompt && (
+                  <button
+                    type="button"
+                    onClick={() => setPromptExpanded((value) => !value)}
+                    className="ml-1.5 text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+                  >
+                    {promptExpanded ? "Show less" : "Show more"}
+                  </button>
+                )}
+              </dd>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>{model.name || "—"}</span>
+            <span aria-hidden="true">·</span>
+            <span>{aspect}</span>
+            <span aria-hidden="true">·</span>
+            <span>{style}</span>
+            {thinkingSupported && thinkingLevel === "deep" && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>Thinking: deep</span>
+              </>
+            )}
+          </div>
+        </dl>
+      )}
     </section>
   );
 }
 
-function ActionButton({
-  onClick,
-  icon,
-  children,
-}: {
-  onClick: () => void;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
+/**
+ * Generating-state visual — three drifting coral/amber/plum orbs over a
+ * dark warm base, with a soft diagonal sheen sweeping across and a status
+ * line at the bottom. Keyframes live in globals.css.
+ */
+function GeneratingAurora() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "inline-flex items-center gap-1.5 border border-border px-2 py-1",
-        "font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground",
-        "transition-colors hover:border-primary/60 hover:text-foreground",
-      )}
+    <div
+      aria-hidden="true"
+      className="absolute inset-3 overflow-hidden rounded-xl bg-[oklch(0.2_0.012_60)]"
     >
-      {icon}
-      {children}
-    </button>
+      {/* Drifting orbs — three offset radial gradients drift on different
+          phases so the composition feels alive without being busy. */}
+      <div
+        className="absolute -inset-[20%] opacity-90 mix-blend-screen"
+        style={{
+          background:
+            "radial-gradient(closest-side at 30% 35%, oklch(0.75 0.2 35 / 0.85) 0%, transparent 70%)",
+          filter: "blur(40px)",
+          animation: "orb-drift-a 11s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="absolute -inset-[20%] opacity-85 mix-blend-screen"
+        style={{
+          background:
+            "radial-gradient(closest-side at 70% 60%, oklch(0.82 0.16 75 / 0.75) 0%, transparent 70%)",
+          filter: "blur(45px)",
+          animation: "orb-drift-b 13s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="absolute -inset-[20%] opacity-80 mix-blend-screen"
+        style={{
+          background:
+            "radial-gradient(closest-side at 55% 40%, oklch(0.7 0.18 340 / 0.7) 0%, transparent 70%)",
+          filter: "blur(55px)",
+          animation: "orb-drift-c 17s ease-in-out infinite",
+        }}
+      />
+
+      {/* Soft diagonal sheen — a wide light strip sweeps across every few
+          seconds, the way a render preview "wipes" into existence. */}
+      <div
+        className="absolute -inset-y-1/2 -inset-x-1/4 mix-blend-overlay"
+        style={{
+          background:
+            "linear-gradient(115deg, transparent 35%, oklch(1 0 0 / 0.22) 50%, transparent 65%)",
+          animation: "aurora-sweep 3.6s ease-in-out infinite",
+        }}
+      />
+
+      {/* Subtle vignette to ground the orbs against the edges. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 40%, oklch(0 0 0 / 0.35) 100%)",
+        }}
+      />
+
+      {/* Status caption */}
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 pb-6">
+        <span
+          aria-hidden="true"
+          className="size-1.5 rounded-full bg-white/85"
+          style={{ animation: "status-dot 1.4s ease-in-out infinite" }}
+        />
+        <p className="text-sm font-medium text-white/90">
+          Cooking your image…
+        </p>
+      </div>
+    </div>
   );
 }
 
-function DownloadAction({ url }: { url: string }) {
+function DownloadButton({ url }: { url: string }) {
   const handleDownload = async () => {
     try {
       const response = await fetch(url);
@@ -295,17 +297,14 @@ function DownloadAction({ url }: { url: string }) {
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="secondary"
+      size="sm"
       onClick={handleDownload}
-      className={cn(
-        "inline-flex items-center gap-1.5 border border-primary/50 px-2 py-1",
-        "font-mono text-[10px] uppercase tracking-[0.18em] text-primary",
-        "transition-colors hover:bg-primary/10",
-      )}
     >
-      <Download aria-hidden="true" className="size-3" />
+      <Download aria-hidden="true" className="size-4" />
       Download
-    </button>
+    </Button>
   );
 }

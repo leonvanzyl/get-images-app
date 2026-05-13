@@ -4,105 +4,110 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import type { LibraryImage } from "@/app/dashboard/actions";
-import type { AspectRatio } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-const ASPECT_STYLE: Record<AspectRatio, CSSProperties> = {
-  "1:1": { aspectRatio: "1 / 1" },
-  "3:2": { aspectRatio: "3 / 2" },
-  "16:9": { aspectRatio: "16 / 9" },
-  "2:3": { aspectRatio: "2 / 3" },
-  "4:5": { aspectRatio: "4 / 5" },
-};
-
-function getAspectStyle(aspect: string): CSSProperties {
-  return ASPECT_STYLE[aspect as AspectRatio] ?? { aspectRatio: "1 / 1" };
-}
-
-function truncatePrompt(prompt: string, max = 60): string {
-  if (prompt.length <= max) return prompt;
-  return `${prompt.slice(0, max).trimEnd()}…`;
-}
-
-function shortId(id: string): string {
-  return id.slice(0, 8);
+/**
+ * Map a `"w:h"` aspect string to a `CSSProperties.aspectRatio` value. Anything
+ * we don't recognize falls back to a square so the card still renders sensibly.
+ *
+ * Kept inline (not exported) so the card stays self-contained and doesn't
+ * depend on the legacy mock-data aspect union.
+ */
+function getAspectRatio(aspect: string): CSSProperties["aspectRatio"] {
+  const match = /^(\d+):(\d+)$/.exec(aspect);
+  if (!match) return "1 / 1";
+  return `${match[1]} / ${match[2]}`;
 }
 
 type ImageCardProps = {
   image: LibraryImage;
-  index: number;
-  total: number;
   onOpen: (image: LibraryImage) => void;
+  onToggleFavorite: (image: LibraryImage) => void;
 };
 
-export function ImageCard({ image, index, total, onOpen }: ImageCardProps) {
-  const frameLabel = `${shortId(image.id)} / ${String(total).padStart(3, "0")}`;
-
+/**
+ * A library image tile.
+ *
+ * The card uses two sibling interactive elements inside a single positioned
+ * wrapper rather than nesting `<button>` in `<button>` (invalid HTML):
+ *
+ *   1. A full-bleed "open" button that fills the card and lives behind the
+ *      image and gradient.
+ *   2. A small "favorite" button absolutely positioned above it.
+ *
+ * Both buttons are real `<button>` elements with their own focus rings.
+ */
+export function ImageCard({
+  image,
+  onOpen,
+  onToggleFavorite,
+}: ImageCardProps) {
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(image)}
-      aria-label={`Open frame ${shortId(image.id)}: ${image.prompt}`}
-      style={{
-        animationDelay: `${index * 30}ms`,
-        animationFillMode: "both",
-      }}
+    <div
       className={cn(
-        "bracket-frame group relative mb-4 block w-full break-inside-avoid overflow-hidden border border-border/60 bg-card text-left",
-        "cursor-pointer transition-colors hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
-        "animate-fade-up opacity-0",
+        "group relative overflow-hidden rounded-xl border bg-card shadow-sm",
+        "card-interactive",
       )}
+      style={{ aspectRatio: getAspectRatio(image.aspect) }}
     >
-      <div className="relative w-full" style={getAspectStyle(image.aspect)}>
-        <Image
-          src={image.url}
-          alt={image.prompt}
-          fill
-          unoptimized
-          sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-        />
-
-        <span
-          aria-hidden="true"
-          className="absolute left-2 top-2 z-10 inline-flex items-center bg-[oklch(0.05_0.008_240/0.72)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/95 backdrop-blur-sm"
-        >
-          {frameLabel}
-        </span>
-
-        {image.favorite && (
-          <span
-            aria-label="Favorite"
-            className="absolute right-2 top-2 z-10 inline-flex items-center gap-1 bg-[oklch(0.05_0.008_240/0.72)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-primary backdrop-blur-sm"
-          >
-            <Star aria-hidden="true" className="size-3 fill-primary" />
-            <span>★</span>
-          </span>
+      {/* The "open" surface — fills the whole card, sits behind the favorite
+          button and any visible hover chrome. */}
+      <button
+        type="button"
+        onClick={() => onOpen(image)}
+        aria-label={`Open image: ${image.prompt}`}
+        className={cn(
+          "absolute inset-0 z-0 block cursor-pointer text-left",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2",
         )}
+      >
+        <span className="sr-only">{image.prompt}</span>
+      </button>
 
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-x-0 bottom-0 z-10",
-            "translate-y-2 bg-gradient-to-t from-[oklch(0.05_0.008_240/0.96)] via-[oklch(0.05_0.008_240/0.6)] to-transparent",
-            "p-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100",
-          )}
-        >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-            Prompt
-            <span className="mx-1.5 text-muted-foreground/60">—</span>
-            <span className="text-foreground/85 normal-case tracking-normal">
-              {truncatePrompt(image.prompt)}
-            </span>
-          </p>
-          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {image.model}
-            <span className="mx-1.5 text-muted-foreground/40">·</span>
-            SEED {image.seed}
-            <span className="mx-1.5 text-muted-foreground/40">·</span>
-            {image.aspect}
-          </p>
-        </div>
+      <Image
+        src={image.url}
+        alt={image.prompt}
+        fill
+        unoptimized
+        sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+        className="pointer-events-none object-cover"
+      />
+
+      {/* Bottom gradient + truncated prompt — fades in on hover. */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end",
+          "bg-gradient-to-t from-black/40 to-transparent",
+          "p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+        )}
+      >
+        <p className="line-clamp-1 text-xs text-white">{image.prompt}</p>
       </div>
-    </button>
+
+      {/* Favorite toggle — top-right, always interactive. */}
+      <button
+        type="button"
+        onClick={() => onToggleFavorite(image)}
+        aria-pressed={image.favorite}
+        aria-label={
+          image.favorite ? "Remove from favorites" : "Add to favorites"
+        }
+        className={cn(
+          "absolute right-2 top-2 z-20 inline-flex size-8 items-center justify-center rounded-full bg-card/80 text-foreground shadow-sm backdrop-blur",
+          "opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+          image.favorite && "opacity-100",
+          "hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2",
+        )}
+      >
+        <Star
+          aria-hidden="true"
+          className={cn(
+            "size-4",
+            image.favorite ? "fill-primary text-primary" : "",
+          )}
+        />
+      </button>
+    </div>
   );
 }

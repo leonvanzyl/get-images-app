@@ -9,18 +9,16 @@ export function GoogleSignInSection() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-4">
       <GoogleSignInButton />
       <div
         className="relative flex items-center"
         role="separator"
-        aria-label="Or continue with email"
+        aria-label="or continue with email"
       >
-        <span aria-hidden="true" className="h-px flex-1 bg-border/60" />
-        <span className="px-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          Or with email
-        </span>
-        <span aria-hidden="true" className="h-px flex-1 bg-border/60" />
+        <span aria-hidden="true" className="h-px flex-1 bg-border" />
+        <span className="px-3 text-xs text-muted-foreground">or</span>
+        <span aria-hidden="true" className="h-px flex-1 bg-border" />
       </div>
     </div>
   )

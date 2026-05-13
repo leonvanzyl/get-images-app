@@ -1,57 +1,43 @@
 "use client";
 
+import Link from "next/link";
 import type { LibraryImage } from "@/app/dashboard/actions";
 import { Button } from "@/components/ui/button";
 import { ImageCard } from "./image-card";
 
 type ImageGridProps = {
   images: LibraryImage[];
-  totalCount: number;
   onOpen: (image: LibraryImage) => void;
-  onClearFilters: () => void;
+  onToggleFavorite: (image: LibraryImage) => void;
 };
 
 export function ImageGrid({
   images,
-  totalCount,
   onOpen,
-  onClearFilters,
+  onToggleFavorite,
 }: ImageGridProps) {
   if (images.length === 0) {
     return (
-      <div className="mt-8 border border-dashed border-border/60 bg-card/40 p-16 text-center">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          — empty reel —
+      <div className="rounded-2xl border border-dashed bg-card/50 p-12 text-center">
+        <p className="font-display text-xl font-medium">Nothing here yet</p>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+          Generate your first image — or adjust your filters to see more.
         </p>
-        <p className="mt-4 font-mono text-sm uppercase tracking-[0.18em] text-foreground">
-          No frames match
-        </p>
-        <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-          Try clearing the filters or searching for a different prompt.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClearFilters}
-            className="h-10 rounded-none border-border/60 font-mono text-xs uppercase tracking-[0.18em]"
-          >
-            Clear filters
-          </Button>
-        </div>
+        <Button asChild className="mt-6">
+          <Link href="/dashboard">Start generating</Link>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="mt-6 columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
-      {images.map((image, index) => (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+      {images.map((image) => (
         <ImageCard
           key={image.id}
           image={image}
-          index={index}
-          total={totalCount}
           onOpen={onOpen}
+          onToggleFavorite={onToggleFavorite}
         />
       ))}
     </div>
