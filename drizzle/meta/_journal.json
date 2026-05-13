@@ -43,6 +43,13 @@
       "when": 1778660196539,
       "tag": "0005_numerous_grim_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778666909482,
+      "tag": "0006_rich_barracuda",
+      "breakpoints": true
     }
   ]
 }

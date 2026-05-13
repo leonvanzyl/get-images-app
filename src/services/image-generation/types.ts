@@ -58,4 +58,6 @@ export type GeneratedImage = {
 
 export type GenerateImageResult = {
   image: GeneratedImage;
+  bytes: Buffer;
+  mediaType: string;
 };

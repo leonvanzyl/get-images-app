@@ -20,13 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { MockApiKey } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import type { ApiKeyView } from "./types";
 
 type Props = {
-  items: MockApiKey[];
-  onRevoke: (apiKey: MockApiKey) => void;
-  onDelete: (apiKey: MockApiKey) => void;
+  items: ApiKeyView[];
+  onRevoke: (apiKey: ApiKeyView) => void;
+  onDelete: (apiKey: ApiKeyView) => void;
 };
 
 function pad2(n: number): string {
@@ -61,10 +61,7 @@ function relativeTime(iso: string | null): string {
  */
 async function copyToClipboard(value: string, label: string): Promise<boolean> {
   try {
-    if (
-      typeof navigator !== "undefined" &&
-      navigator.clipboard?.writeText
-    ) {
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(value);
       toast.success(label);
       return true;
@@ -77,12 +74,12 @@ async function copyToClipboard(value: string, label: string): Promise<boolean> {
   }
 }
 
-function StatusBadge({ status }: { status: MockApiKey["status"] }) {
+function StatusBadge({ status }: { status: ApiKeyView["status"] }) {
   if (status === "active") {
     return (
       <Badge
         variant="outline"
-        className="rounded-full border-transparent bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+        className="bg-primary/10 text-primary rounded-full border-transparent px-2.5 py-0.5 text-xs font-medium"
       >
         Active
       </Badge>
@@ -91,18 +88,18 @@ function StatusBadge({ status }: { status: MockApiKey["status"] }) {
   return (
     <Badge
       variant="outline"
-      className="rounded-full border-transparent bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+      className="bg-muted text-muted-foreground rounded-full border-transparent px-2.5 py-0.5 text-xs font-medium"
     >
       Revoked
     </Badge>
   );
 }
 
-function CopyPrefixButton({ prefix }: { prefix: string }) {
+function CopyDisplayKeyButton({ displayKey }: { displayKey: string }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
-    const ok = await copyToClipboard(prefix, "Prefix copied");
+    const ok = await copyToClipboard(displayKey, "Key identifier copied");
     if (ok) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
@@ -115,41 +112,37 @@ function CopyPrefixButton({ prefix }: { prefix: string }) {
       variant="ghost"
       size="icon"
       onClick={handleCopy}
-      aria-label={`Copy prefix ${prefix}`}
-      className="size-7 text-muted-foreground hover:text-foreground"
+      aria-label={`Copy key identifier ${displayKey}`}
+      className="text-muted-foreground hover:text-foreground size-7"
     >
-      {copied ? (
-        <Check className="size-3.5" />
-      ) : (
-        <Copy className="size-3.5" />
-      )}
+      {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
     </Button>
   );
 }
 
 export function KeyTable({ items, onRevoke, onDelete }: Props) {
-  async function handleCopyPrefix(key: MockApiKey) {
-    await copyToClipboard(key.prefix, "Prefix copied");
+  async function handleCopyIdentifier(key: ApiKeyView) {
+    await copyToClipboard(key.displayKey, "Key identifier copied");
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border bg-card">
+    <div className="bg-card overflow-hidden rounded-2xl border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
+            <TableHead className="text-muted-foreground px-4 py-3 text-xs font-medium">
               Name
             </TableHead>
-            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
+            <TableHead className="text-muted-foreground px-4 py-3 text-xs font-medium">
               Key
             </TableHead>
-            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
+            <TableHead className="text-muted-foreground px-4 py-3 text-xs font-medium">
               Created
             </TableHead>
-            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
+            <TableHead className="text-muted-foreground px-4 py-3 text-xs font-medium">
               Last used
             </TableHead>
-            <TableHead className="px-4 py-3 text-xs font-medium text-muted-foreground">
+            <TableHead className="text-muted-foreground px-4 py-3 text-xs font-medium">
               Status
             </TableHead>
             <TableHead className="w-12 px-4 py-3 text-right">
@@ -163,33 +156,29 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
             return (
               <TableRow
                 key={key.id}
-                className={cn(
-                  "transition-colors hover:bg-accent/50",
-                  revoked && "opacity-60",
-                )}
+                className={cn("hover:bg-accent/50 transition-colors", revoked && "opacity-60")}
               >
-                <TableCell className="px-4 py-3.5 text-sm font-medium text-foreground">
+                <TableCell className="text-foreground px-4 py-3.5 text-sm font-medium">
                   {key.name}
                 </TableCell>
                 <TableCell className="px-4 py-3.5">
                   <div className="flex items-center gap-2">
                     <code
                       className={cn(
-                        "font-mono text-xs text-foreground",
-                        revoked &&
-                          "line-through decoration-muted-foreground/60",
+                        "text-foreground font-mono text-xs",
+                        revoked && "decoration-muted-foreground/60 line-through"
                       )}
                     >
-                      {key.prefix}
+                      {key.displayKey}
                     </code>
-                    <CopyPrefixButton prefix={key.prefix} />
+                    <CopyDisplayKeyButton displayKey={key.displayKey} />
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                <TableCell className="text-muted-foreground px-4 py-3.5 text-sm">
                   {relativeTime(key.createdAt)}
                 </TableCell>
-                <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                  {relativeTime(key.lastUsedAt)}
+                <TableCell className="text-muted-foreground px-4 py-3.5 text-sm">
+                  {relativeTime(key.lastRequest)}
                 </TableCell>
                 <TableCell className="px-4 py-3.5">
                   <StatusBadge status={key.status} />
@@ -201,33 +190,27 @@ export function KeyTable({ items, onRevoke, onDelete }: Props) {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="size-8 text-muted-foreground hover:text-foreground"
+                        className="text-muted-foreground hover:text-foreground size-8"
                         aria-label={`Actions for ${key.name}`}
                       >
                         <MoreHorizontal className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem onClick={() => handleCopyPrefix(key)}>
+                      <DropdownMenuItem onClick={() => handleCopyIdentifier(key)}>
                         <Copy className="size-3.5" />
-                        Copy prefix
+                        Copy identifier
                       </DropdownMenuItem>
                       {!revoked && (
                         <>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => onRevoke(key)}
-                          >
+                          <DropdownMenuItem variant="destructive" onClick={() => onRevoke(key)}>
                             Revoke
                           </DropdownMenuItem>
                         </>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => onDelete(key)}
-                      >
+                      <DropdownMenuItem variant="destructive" onClick={() => onDelete(key)}>
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>

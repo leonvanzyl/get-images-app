@@ -18,7 +18,8 @@ const FOOTER_COLUMNS: FooterColumn[] = [
     heading: "Developers",
     links: [
       { label: "MCP", href: "/dashboard/integrations" },
-      { label: "API", href: "/dashboard/keys" },
+      { label: "API docs", href: "/docs/api" },
+      { label: "API keys", href: "/dashboard/keys" },
     ],
   },
   {

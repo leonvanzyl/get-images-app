@@ -1,6 +1,13 @@
 import { db } from "@/lib/db";
 import { generation } from "@/lib/schema";
 import { upload } from "@/lib/storage";
+import {
+  deductCredit,
+  getBalance,
+  getModelCreditCost,
+  refundCredit,
+  InsufficientCreditsError,
+} from "@/services/credits";
 import { ValidationError, ProviderError } from "./errors";
 import { getModel } from "./models";
 import { callProvider } from "./providers";
@@ -18,9 +25,16 @@ export type {
   ThinkingLevel,
 } from "./types";
 
-export async function generate(
-  input: GenerateImageInput,
-): Promise<GenerateImageResult> {
+export type RunGenerationInput = Omit<GenerateImageInput, "userId" | "creditCost">;
+
+export type RunGenerationResult = GenerateImageResult & {
+  credits: {
+    charged: number;
+    remaining: number;
+  };
+};
+
+export async function generate(input: GenerateImageInput): Promise<GenerateImageResult> {
   const trimmedPrompt = input.prompt.trim();
   if (!trimmedPrompt) {
     throw new ValidationError("Prompt cannot be empty.");
@@ -44,12 +58,13 @@ export async function generate(
     if (error && typeof error === "object" && "code" in error) throw error;
     throw new ProviderError(
       `Image generation failed: ${error instanceof Error ? error.message : String(error)}`,
-      error,
+      error
     );
   }
 
   const buffer = Buffer.from(generatedFile.uint8Array);
-  const ext = generatedFile.mediaType?.split("/")[1] ?? "png";
+  const mediaType = generatedFile.mediaType ?? "image/png";
+  const ext = mediaType.split("/")[1] ?? "png";
   const filename = `${crypto.randomUUID()}.${ext}`;
 
   const { url } = await upload(buffer, filename, "generations", {
@@ -69,7 +84,7 @@ export async function generate(
       style: input.style ?? null,
       thinkingLevel: input.thinkingLevel ?? null,
       imageUrl: url,
-      mediaType: generatedFile.mediaType ?? "image/png",
+      mediaType,
       creditCost: input.creditCost ?? null,
       createdAt: now,
     })
@@ -87,5 +102,68 @@ export async function generate(
       ...(input.thinkingLevel ? { thinkingLevel: input.thinkingLevel } : {}),
       createdAt: now.toISOString(),
     },
+    bytes: buffer,
+    mediaType,
   };
+}
+
+export async function runGeneration(
+  userId: string,
+  input: RunGenerationInput
+): Promise<RunGenerationResult> {
+  validateGenerationRequest(input);
+
+  const creditCost = await getModelCreditCost(input.modelId, input.thinkingLevel);
+  const balance = await getBalance(userId);
+
+  if (balance < creditCost) {
+    throw new InsufficientCreditsError(
+      `Not enough credits. This generation costs ${creditCost} credit${creditCost === 1 ? "" : "s"}.`
+    );
+  }
+
+  let deducted = false;
+
+  try {
+    await deductCredit(userId, creditCost);
+    deducted = true;
+
+    const result = await generate({
+      ...input,
+      userId,
+      creditCost,
+    });
+    const remaining = await getBalance(userId);
+
+    return {
+      ...result,
+      credits: {
+        charged: creditCost,
+        remaining,
+      },
+    };
+  } catch (error) {
+    if (deducted && !(error instanceof InsufficientCreditsError)) {
+      await refundCredit(userId, creditCost, "Generation failed — credits refunded");
+    }
+
+    throw error;
+  }
+}
+
+function validateGenerationRequest(input: RunGenerationInput) {
+  const modelDef = getModel(input.modelId);
+  if (!modelDef) {
+    throw new ValidationError(`Unknown model: ${input.modelId}`);
+  }
+
+  if (input.aspectRatio && !modelDef.aspectRatios.includes(input.aspectRatio)) {
+    throw new ValidationError(
+      `${modelDef.name} does not support ${input.aspectRatio} aspect ratio.`
+    );
+  }
+
+  if (input.thinkingLevel && !modelDef.thinking) {
+    throw new ValidationError(`${modelDef.name} does not support thinking controls.`);
+  }
 }

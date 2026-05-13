@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { createApiKeyAction } from "@/app/dashboard/keys/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,61 +15,31 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { MockApiKey } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import type { CreatedApiKeyView } from "./types";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /**
-   * Fires only after the user has confirmed (in step 2) that they stored the
-   * key. The page strips `fullKey` before persisting into the visible list.
-   */
-  onCreated: (apiKey: MockApiKey) => void;
+  onCreated: (apiKey: CreatedApiKeyView) => void;
 };
 
 type Step = "name" | "reveal";
 
-const ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-/**
- * Use the Web Crypto RNG so the mocked key strings look like real entropy
- * rather than `Math.random()` slop. `getRandomValues` is synchronous and
- * universally available in modern browsers / Node 19+.
- */
-function randomChars(length: number): string {
-  const bytes = new Uint8Array(length);
-  crypto.getRandomValues(bytes);
-  let out = "";
-  for (let i = 0; i < length; i++) {
-    const byte = bytes[i] ?? 0;
-    out += ALPHABET[byte % ALPHABET.length];
-  }
-  return out;
-}
-
-function rand4(): string {
-  return randomChars(4);
-}
-
-function rand24(): string {
-  return randomChars(24);
-}
-
 /**
  * Two-step key creation dialog.
  *
- * Step 1 collects a recognizable name. Step 2 reveals the freshly-minted full
- * key exactly once and requires a "I stored this" checkbox before the parent
- * is allowed to commit the key to its list. The `fullKey` is held locally and
- * never persists past the dialog's lifetime.
+ * Step 1 collects a recognizable name. Step 2 reveals the full key returned by
+ * Better Auth exactly once and requires a "I stored this" checkbox before the
+ * dialog closes. The parent strips `fullKey` before adding the row to the list.
  */
 export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
   const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
-  const [newKey, setNewKey] = useState<MockApiKey | null>(null);
+  const [newKey, setNewKey] = useState<CreatedApiKeyView | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   function resetState() {
     setStep("name");
@@ -76,38 +47,41 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
     setNewKey(null);
     setConfirmed(false);
     setCopied(false);
+    setCreating(false);
   }
 
   function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen && creating) return;
     if (!nextOpen) {
       resetState();
     }
     onOpenChange(nextOpen);
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     const trimmed = name.trim();
-    if (!trimmed) return;
-    const minted: MockApiKey = {
-      id: crypto.randomUUID(),
-      name: trimmed,
-      prefix: `gi_live_${rand4()}••••••${rand4()}`,
-      fullKey: `gi_live_${rand4()}_${rand24()}`,
-      createdAt: new Date().toISOString(),
-      lastUsedAt: null,
-      status: "active",
-    };
-    setNewKey(minted);
-    setStep("reveal");
+    if (!trimmed || creating) return;
+    setCreating(true);
+    try {
+      const result = await createApiKeyAction(trimmed);
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      setNewKey(result.data);
+      toast.success("Key created");
+      setStep("reveal");
+    } catch {
+      toast.error("Couldn't create the key");
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function handleCopy() {
     if (!newKey?.fullKey) return;
     try {
-      if (
-        typeof navigator !== "undefined" &&
-        navigator.clipboard?.writeText
-      ) {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(newKey.fullKey);
         setCopied(true);
         toast.success("Key copied");
@@ -124,27 +98,26 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
   function handleDone() {
     if (!newKey || !confirmed) return;
     onCreated(newKey);
-    toast.success("Key created");
     handleOpenChange(false);
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
       event.preventDefault();
-      handleCreate();
+      void handleCreate();
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="gap-5 rounded-[20px] border bg-card p-8 sm:max-w-md">
+      <DialogContent className="bg-card gap-5 rounded-[20px] border p-8 sm:max-w-md">
         {step === "name" ? (
           <>
             <DialogHeader className="space-y-2">
               <DialogTitle className="font-display text-2xl font-medium tracking-tight">
                 New key
               </DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
                 Give it a name you&apos;ll recognize.
               </DialogDescription>
             </DialogHeader>
@@ -165,7 +138,7 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                 autoComplete="off"
                 spellCheck={false}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Examples: Production, Dev — local, Cursor agent.
               </p>
             </div>
@@ -175,15 +148,12 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                 type="button"
                 variant="ghost"
                 onClick={() => handleOpenChange(false)}
+                disabled={creating}
               >
                 Cancel
               </Button>
-              <Button
-                type="button"
-                onClick={handleCreate}
-                disabled={!name.trim()}
-              >
-                Create key
+              <Button type="button" onClick={handleCreate} disabled={!name.trim() || creating}>
+                {creating ? "Creating..." : "Create key"}
               </Button>
             </DialogFooter>
           </>
@@ -193,17 +163,17 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
               <DialogTitle className="font-display text-2xl font-medium tracking-tight">
                 Save your key now
               </DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
-                This is the only time you&apos;ll see the full key. Copy it
-                into your password manager or MCP config before closing.
+              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
+                This is the only time you&apos;ll see the full key. Copy it into your password
+                manager or MCP config before closing.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium">Your new key</Label>
-              <div className="flex items-center gap-2 rounded-[10px] border bg-secondary p-2">
+              <div className="bg-secondary flex items-center gap-2 rounded-[10px] border p-2">
                 <code
-                  className="flex-1 overflow-x-auto px-2 py-1 font-mono text-sm text-foreground"
+                  className="text-foreground block min-w-0 flex-1 overflow-x-auto px-2 py-1 font-mono text-sm whitespace-nowrap"
                   aria-label="Full API key"
                 >
                   {newKey?.fullKey}
@@ -216,11 +186,7 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
                   aria-label="Copy key to clipboard"
                   className="gap-1.5"
                 >
-                  {copied ? (
-                    <Check className="size-3.5" />
-                  ) : (
-                    <Copy className="size-3.5" />
-                  )}
+                  {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                   {copied ? "Copied" : "Copy"}
                 </Button>
               </div>
@@ -237,26 +203,20 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: Props) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "relative mt-0.5 grid size-4 shrink-0 place-items-center rounded border bg-background transition-colors",
+                  "bg-background relative mt-0.5 grid size-4 shrink-0 place-items-center rounded border transition-colors",
                   "peer-checked:border-primary peer-checked:bg-primary",
-                  "peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 peer-focus-visible:ring-offset-2",
+                  "peer-focus-visible:ring-ring/50 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2"
                 )}
               >
-                {confirmed && (
-                  <Check className="size-3 text-primary-foreground" />
-                )}
+                {confirmed && <Check className="text-primary-foreground size-3" />}
               </span>
-              <span className="text-sm text-muted-foreground transition-colors peer-checked:text-foreground">
+              <span className="text-muted-foreground peer-checked:text-foreground text-sm transition-colors">
                 I&apos;ve stored this key in a safe place.
               </span>
             </label>
 
             <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                onClick={handleDone}
-                disabled={!confirmed}
-              >
+              <Button type="button" onClick={handleDone} disabled={!confirmed}>
                 Done
               </Button>
             </DialogFooter>

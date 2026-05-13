@@ -8,23 +8,14 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { generation } from "@/lib/schema";
+import { getBalance, getAllModelPricing, type ModelPricingRow } from "@/services/credits";
 import {
-  getBalance,
-  getModelCreditCost,
-  getAllModelPricing,
-  deductCredit,
-  refundCredit,
-  InsufficientCreditsError,
-  type ModelPricingRow,
-} from "@/services/credits";
-import {
-  generate,
   listModels,
+  runGeneration,
   SUPPORTED_ASPECT_RATIOS,
-  type GenerateImageResult,
+  type GeneratedImage,
   type ImageModelDefinition,
 } from "@/services/image-generation";
-
 
 const generateLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 
@@ -36,12 +27,12 @@ const generateInputSchema = z.object({
   thinkingLevel: z.enum(["default", "deep"]).optional(),
 });
 
-type ActionSuccess = { success: true; data: GenerateImageResult };
+type ActionSuccess = { success: true; data: { image: GeneratedImage } };
 type ActionError = { success: false; error: string };
 type GenerateActionResult = ActionSuccess | ActionError;
 
 export async function generateImageAction(
-  input: z.infer<typeof generateInputSchema>,
+  input: z.infer<typeof generateInputSchema>
 ): Promise<GenerateActionResult> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
@@ -60,56 +51,31 @@ export async function generateImageAction(
   if (!parsed.success) {
     return {
       success: false,
-      error:
-        "Invalid input: " +
-        parsed.error.issues.map((i) => i.message).join(", "),
+      error: "Invalid input: " + parsed.error.issues.map((i) => i.message).join(", "),
     };
   }
 
   const { prompt, modelId, aspectRatio, style, thinkingLevel } = parsed.data;
-  const creditCost = await getModelCreditCost(modelId, thinkingLevel);
 
   try {
-    const balance = await getBalance(session.user.id);
-    if (balance < creditCost) {
-      return {
-        success: false,
-        error: `Not enough credits. This generation costs ${creditCost} credit${creditCost === 1 ? "" : "s"}.`,
-      };
-    }
-
-    await deductCredit(session.user.id, creditCost);
-
-    const result = await generate({
+    const generation = await runGeneration(session.user.id, {
       prompt,
       modelId,
-      userId: session.user.id,
-      creditCost,
       ...(aspectRatio !== undefined ? { aspectRatio } : {}),
       ...(style !== undefined ? { style } : {}),
       ...(thinkingLevel !== undefined ? { thinkingLevel } : {}),
     });
+    const result = { image: generation.image };
 
     revalidatePath("/dashboard", "layout");
     return { success: true, data: result };
   } catch (error) {
-    if (!(error instanceof InsufficientCreditsError)) {
-      await refundCredit(
-        session.user.id,
-        creditCost,
-        "Generation failed — credits refunded",
-      );
-    }
-
-    const message =
-      error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? error.message : String(error);
     return { success: false, error: message };
   }
 }
 
-export async function getAvailableModelsAction(): Promise<
-  ImageModelDefinition[]
-> {
+export async function getAvailableModelsAction(): Promise<ImageModelDefinition[]> {
   return listModels({ onlyConfigured: true });
 }
 
@@ -159,7 +125,7 @@ export async function getModelPricingAction(): Promise<ModelPricingRow[]> {
 }
 
 export async function deleteGenerationAction(
-  id: string,
+  id: string
 ): Promise<{ success: boolean; error?: string }> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
@@ -176,9 +142,7 @@ export async function deleteGenerationAction(
     return { success: false, error: "Image not found." };
   }
 
-  await db
-    .delete(generation)
-    .where(eq(generation.id, id));
+  await db.delete(generation).where(eq(generation.id, id));
 
   return { success: true };
 }

@@ -1,8 +1,8 @@
 /**
  * Mock data for the Get Images UI demo.
  *
- * Wave 2c provides the shared data layer that the Generate, Library, Keys, and
- * Integrations pages all read from so the demo feels cohesive. Nothing here
+ * Wave 2c provides the shared image data layer that demo surfaces can read
+ * from so the UI feels cohesive. Nothing here
  * hits a real API — the entries are static, deterministic, and re-used across
  * routes. Picsum.photos is used for placeholder imagery so the build needs no
  * external assets.
@@ -10,13 +10,7 @@
 
 export type AspectRatio = "1:1" | "3:2" | "16:9" | "2:3" | "4:5";
 
-export type StylePreset =
-  | "Photoreal"
-  | "Editorial"
-  | "Cinematic"
-  | "Studio"
-  | "Sketch"
-  | "Ink";
+export type StylePreset = "Photoreal" | "Editorial" | "Cinematic" | "Studio" | "Sketch" | "Ink";
 
 export type MockImage = {
   id: string;
@@ -31,19 +25,6 @@ export type MockImage = {
   favorite?: boolean;
 };
 
-export type ApiKeyStatus = "active" | "revoked";
-
-export type MockApiKey = {
-  id: string;
-  name: string;
-  prefix: string;
-  /** Only present in the just-created reveal flow (UI mock). */
-  fullKey?: string;
-  createdAt: string;
-  lastUsedAt: string | null;
-  status: ApiKeyStatus;
-};
-
 export const STYLE_PRESETS: StylePreset[] = [
   "Photoreal",
   "Editorial",
@@ -53,13 +34,7 @@ export const STYLE_PRESETS: StylePreset[] = [
   "Ink",
 ];
 
-export const ASPECT_RATIOS: AspectRatio[] = [
-  "1:1",
-  "3:2",
-  "16:9",
-  "2:3",
-  "4:5",
-];
+export const ASPECT_RATIOS: AspectRatio[] = ["1:1", "3:2", "16:9", "2:3", "4:5"];
 
 export const MOCK_MODELS = [
   {
@@ -313,11 +288,7 @@ const IMAGE_SEEDS: ImageSeed[] = [
  * across renders within a build. Anchored to the start of the current day.
  */
 const NOW = new Date();
-const TODAY_START = new Date(
-  NOW.getFullYear(),
-  NOW.getMonth(),
-  NOW.getDate(),
-).getTime();
+const TODAY_START = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()).getTime();
 
 function isoDaysAgo(days: number, minutes = 0): string {
   const offset = days * 86_400_000 + minutes * 60_000;
@@ -340,47 +311,10 @@ export const MOCK_IMAGES: MockImage[] = IMAGE_SEEDS.map((seed) => {
   };
   return {
     ...base,
-    ...(seed.negativePrompt !== undefined
-      ? { negativePrompt: seed.negativePrompt }
-      : {}),
+    ...(seed.negativePrompt !== undefined ? { negativePrompt: seed.negativePrompt } : {}),
     ...(seed.favorite !== undefined ? { favorite: seed.favorite } : {}),
   };
 });
-
-export const MOCK_KEYS: MockApiKey[] = [
-  {
-    id: "key_prod_001",
-    name: "Production",
-    prefix: "gi_live_x9k4••••••a1b2",
-    createdAt: isoDaysAgo(45),
-    lastUsedAt: isoDaysAgo(0, 17),
-    status: "active",
-  },
-  {
-    id: "key_dev_002",
-    name: "Dev — local",
-    prefix: "gi_live_p3r7••••••9q0w",
-    createdAt: isoDaysAgo(12),
-    lastUsedAt: null,
-    status: "active",
-  },
-  {
-    id: "key_cursor_003",
-    name: "Cursor",
-    prefix: "gi_live_h8t2••••••m4n6",
-    createdAt: isoDaysAgo(60),
-    lastUsedAt: isoDaysAgo(11),
-    status: "active",
-  },
-  {
-    id: "key_old_004",
-    name: "Old laptop",
-    prefix: "gi_live_c5v1••••••z2x8",
-    createdAt: isoDaysAgo(120),
-    lastUsedAt: isoDaysAgo(70),
-    status: "revoked",
-  },
-];
 
 export const EXAMPLE_PROMPTS: string[] = [
   "Empty parking garage at golden hour, single red car, anamorphic flare",

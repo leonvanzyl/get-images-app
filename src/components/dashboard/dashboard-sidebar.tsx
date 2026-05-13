@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  BookOpenText,
   Coins,
   Images,
   KeyRound,
@@ -47,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/library", label: "Library", icon: Images },
   { href: "/dashboard/keys", label: "API keys", icon: KeyRound },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
+  { href: "/docs/api", label: "Docs", icon: BookOpenText },
 ];
 
 function isActiveRoute(pathname: string, href: string): boolean {

@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import type { ApiKeyView } from "@/components/keys/types";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -9,35 +11,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MockApiKey } from "@/lib/mock-data";
+import { InstallSnippets } from "./install-snippets";
 
 export interface KeyPickerProps {
   /** Active (non-revoked) keys to choose between. */
-  keys: MockApiKey[];
+  keys: ApiKeyView[];
   selectedKeyId: string | null;
   onChange: (id: string) => void;
 }
 
+export interface IntegrationKeySelectionProps {
+  keys: ApiKeyView[];
+}
+
 /**
- * Picks which key gets baked into the install snippets below. When no active
- * key exists we surface a friendly nudge instead of inlining a placeholder.
+ * Shows the saved key identifier the user should pair with the install
+ * snippets. The full secret is only shown at creation time, so snippets keep a
+ * placeholder for the saved value.
  */
 export function KeyPicker({ keys, selectedKeyId, onChange }: KeyPickerProps) {
   if (keys.length === 0) {
     return (
       <section
         aria-labelledby="key-picker-empty-heading"
-        className="rounded-2xl border bg-secondary p-6"
+        className="bg-secondary rounded-2xl border p-6"
       >
-        <p
-          id="key-picker-empty-heading"
-          className="font-display text-lg font-medium"
-        >
+        <p id="key-picker-empty-heading" className="font-display text-lg font-medium">
           No active keys yet
         </p>
-        <p className="mt-1 max-w-prose text-sm text-muted-foreground">
-          You&apos;ll need an active API key to wire up an integration. Create
-          one and the snippets below will fill in automatically.
+        <p className="text-muted-foreground mt-1 max-w-prose text-sm">
+          You&apos;ll need an active API key to wire up an integration. Create one, save the full
+          secret, and paste it into the snippets below.
         </p>
         <Button asChild className="mt-4">
           <Link href="/dashboard/keys">Create a key</Link>
@@ -59,9 +63,9 @@ export function KeyPicker({ keys, selectedKeyId, onChange }: KeyPickerProps) {
         <label
           id="key-picker-heading"
           htmlFor="integrations-key-select"
-          className="text-sm font-medium text-foreground"
+          className="text-foreground text-sm font-medium"
         >
-          Use key:
+          Saved key:
         </label>
         <Select value={selected.id} onValueChange={onChange}>
           <SelectTrigger
@@ -75,9 +79,7 @@ export function KeyPicker({ keys, selectedKeyId, onChange }: KeyPickerProps) {
               <SelectItem key={key.id} value={key.id}>
                 <span className="text-sm">
                   {key.name}{" "}
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {key.prefix}
-                  </span>
+                  <span className="text-muted-foreground font-mono text-xs">{key.displayKey}</span>
                 </span>
               </SelectItem>
             ))}
@@ -87,10 +89,21 @@ export function KeyPicker({ keys, selectedKeyId, onChange }: KeyPickerProps) {
 
       <Link
         href="/dashboard/keys"
-        className="text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 transition-colors hover:underline"
       >
         Manage keys
       </Link>
     </section>
+  );
+}
+
+export function IntegrationKeySelection({ keys }: IntegrationKeySelectionProps) {
+  const firstKeyId = keys[0]?.id ?? null;
+  const [selectedKeyId, setSelectedKeyId] = useState<string | null>(firstKeyId);
+  return (
+    <>
+      <KeyPicker keys={keys} selectedKeyId={selectedKeyId} onChange={setSelectedKeyId} />
+      <InstallSnippets apiKey="{KEY}" />
+    </>
   );
 }

@@ -1,10 +1,11 @@
-import { polarClient } from "@polar-sh/better-auth/client"
-import { createAuthClient } from "better-auth/react"
+import { apiKeyClient } from "@better-auth/api-key/client";
+import { polarClient } from "@polar-sh/better-auth/client";
+import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  plugins: [polarClient()],
-})
+  plugins: [polarClient(), apiKeyClient()],
+});
 
 export const {
   signIn,
@@ -15,4 +16,4 @@ export const {
   requestPasswordReset,
   resetPassword,
   sendVerificationEmail,
-} = authClient
+} = authClient;

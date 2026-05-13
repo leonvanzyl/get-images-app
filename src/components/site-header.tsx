@@ -14,6 +14,7 @@ const NAV_LINKS: NavLink[] = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#examples", label: "Examples" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/docs/api", label: "Docs" },
 ];
 
 export async function SiteHeader() {

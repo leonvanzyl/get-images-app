@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CopyCodeBlock } from "./copy-code-block";
 
 /**
@@ -63,7 +58,7 @@ const SNIPPETS: SnippetConfig[] = [
 ];
 
 export interface InstallSnippetsProps {
-  /** Key prefix (or `{KEY}` placeholder) to inline into each snippet. */
+  /** Full saved key or `{KEY}` placeholder to inline into each snippet. */
   apiKey: string;
 }
 
@@ -71,20 +66,14 @@ export function InstallSnippets({ apiKey }: InstallSnippetsProps) {
   const defaultTab = SNIPPETS[0]!.id;
 
   return (
-    <section
-      aria-labelledby="install-snippets-heading"
-      className="space-y-4"
-    >
+    <section aria-labelledby="install-snippets-heading" className="space-y-4">
       <div className="space-y-1">
-        <h2
-          id="install-snippets-heading"
-          className="font-display text-lg font-medium"
-        >
+        <h2 id="install-snippets-heading" className="font-display text-lg font-medium">
           Install snippets
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Paste the snippet for your client. The selected key is inlined for
-          you — copy, save, restart, done.
+        <p className="text-muted-foreground text-sm">
+          Paste the snippet for your client and replace {"{KEY}"} with the full key you saved when
+          it was created.
         </p>
       </div>
 
@@ -100,14 +89,8 @@ export function InstallSnippets({ apiKey }: InstallSnippetsProps) {
         {SNIPPETS.map((snippet) => {
           const code = snippet.template.replace("{KEY}", apiKey);
           return (
-            <TabsContent
-              key={snippet.id}
-              value={snippet.id}
-              className="mt-4 space-y-3"
-            >
-              <p className="text-sm text-muted-foreground">
-                {snippet.description}
-              </p>
+            <TabsContent key={snippet.id} value={snippet.id} className="mt-4 space-y-3">
+              <p className="text-muted-foreground text-sm">{snippet.description}</p>
               <CopyCodeBlock filename={snippet.filename} code={code} />
             </TabsContent>
           );
