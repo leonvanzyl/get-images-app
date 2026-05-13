@@ -3,10 +3,10 @@ import { verifyMcpToken } from "@/lib/mcp/auth";
 import { buildMcpServer } from "@/lib/mcp/server";
 
 export const runtime = "nodejs";
-// Vercel function ceiling. Plan maxes: Hobby 60s, Pro Standard 300s,
-// Pro Fluid Compute 800s, Enterprise 900s. Vercel silently clamps to the
-// active plan's ceiling — 800 here is "give us the max your tier allows".
-export const maxDuration = 800;
+// Vercel rejects values above the plan ceiling at build time (Hobby: 300s,
+// Pro Standard: 300s, Pro Fluid: 800s, Enterprise: 900s). 300 is the safe
+// max that builds on every plan; raise if you upgrade to Fluid.
+export const maxDuration = 300;
 
 const baseHandler = createMcpHandler(
   (server) => buildMcpServer(server),
@@ -17,8 +17,8 @@ const baseHandler = createMcpHandler(
     // Without this, the handler aborts the response after 60s even though the
     // image generation finishes successfully on the backend — visible as a
     // generated image in the dashboard but a "timed out" error in the client.
-    // Set this to the same ceiling as the function timeout.
-    maxDuration: 800,
+    // Keep this in sync with the function timeout above.
+    maxDuration: 300,
   },
 );
 
