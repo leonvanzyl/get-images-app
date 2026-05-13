@@ -77,6 +77,7 @@ export function RecentStrip({ items, current, onSelect }: RecentStripProps) {
                 src={image.url}
                 alt=""
                 fill
+                unoptimized
                 sizes="120px"
                 className="object-cover"
               />

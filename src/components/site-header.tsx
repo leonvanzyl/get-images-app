@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserProfile } from "@/components/auth/user-profile";
+import { getOptionalSession } from "@/lib/session";
 import { ModeToggle } from "./ui/mode-toggle";
 
 const NAV_LINKS = [
@@ -9,7 +10,8 @@ const NAV_LINKS = [
   { href: "/pricing", label: "Pricing" },
 ];
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const session = await getOptionalSession();
   return (
     <>
       <a
@@ -58,6 +60,16 @@ export function SiteHeader() {
                 </Link>
               </li>
             ))}
+            {session && (
+              <li>
+                <Link
+                  href="/dashboard"
+                  className="font-mono text-xs uppercase tracking-[0.14em] text-primary transition-colors hover:text-primary/80"
+                >
+                  Dashboard
+                </Link>
+              </li>
+            )}
           </ul>
 
           <div

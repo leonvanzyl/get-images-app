@@ -121,6 +121,7 @@ export function ImageLightbox({
                 src={image.url}
                 alt={image.prompt}
                 fill
+                unoptimized
                 sizes="(min-width: 1024px) 60vw, 100vw"
                 priority
                 className="object-cover"
