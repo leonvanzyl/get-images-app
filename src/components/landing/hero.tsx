@@ -92,26 +92,26 @@ export function Hero() {
               id="hero-heading"
               className="font-display text-5xl font-medium tracking-tight text-balance md:text-6xl lg:text-7xl"
             >
-              Image generation
+              Agents shouldn&apos;t
               <br />
-              <span className="italic">your agents can call.</span>
+              <span className="italic">need stock photos.</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              Drop a single config snippet into Claude, Cursor, or any
-              MCP-aware coding agent. Your agent gains a tool to generate
-              images on demand — no SDK, no glue code.
+              Drop Get Images into Claude, Cursor, or any MCP-aware agent.
+              Your agent gains a tool to generate exactly the image it
+              needs — no SDK, no glue code.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="gap-2">
                 <Link href="/register">
-                  Get your API key
+                  Get a key
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="ghost">
-                <Link href="#live-demo">See it in action</Link>
+                <Link href="#live-demo">Watch the demo</Link>
               </Button>
             </div>
 
