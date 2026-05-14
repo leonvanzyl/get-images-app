@@ -1,18 +1,20 @@
 import Link from "next/link";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { FileJson, KeyRound } from "lucide-react";
+import { FileCode, KeyRound } from "lucide-react";
 import Markdown, { type Components } from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "REST API docs",
-  description: "Use the Get Images REST API with API keys, curl, scripts, and agents.",
+  title: "Agent skill docs",
+  description:
+    "Install the Get Images agent skill to teach Claude, Cursor, Codex, and other coding agents how to use the Get Images MCP server well.",
 };
 
-const markdownPath = path.join(process.cwd(), "docs", "api.md");
+const markdownPath = path.join(process.cwd(), "docs", "skill.md");
 
 const markdownComponents: Components = {
   h1: ({ children }) => (
@@ -66,6 +68,22 @@ const markdownComponents: Components = {
     </code>
   ),
   strong: ({ children }) => <strong className="font-medium text-foreground">{children}</strong>,
+  details: ({ children }) => (
+    <details className="group mt-3 overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow open:shadow-md [&>*:not(summary)]:px-5 [&>*:last-child:not(summary)]:pb-5">
+      {children}
+    </details>
+  ),
+  summary: ({ children }) => (
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-display text-base font-medium text-foreground transition-colors hover:bg-accent group-open:border-b group-open:bg-accent/50 [&::-webkit-details-marker]:hidden">
+      <span>{children}</span>
+      <span
+        aria-hidden="true"
+        className="text-muted-foreground transition-transform group-open:rotate-90"
+      >
+        ›
+      </span>
+    </summary>
+  ),
 };
 
 async function getMarkdown() {
@@ -73,18 +91,19 @@ async function getMarkdown() {
   return markdown.replace(/^# .+\r?\n+/, "");
 }
 
-export default async function ApiDocsPage() {
+export default async function SkillDocsPage() {
   const markdown = await getMarkdown();
 
   return (
     <div className="container mx-auto max-w-6xl px-6 py-16 sm:px-8 md:py-24">
       <header className="max-w-3xl space-y-4">
         <h1 className="font-display text-4xl font-medium tracking-tight md:text-5xl">
-          REST API docs
+          Agent skill
         </h1>
         <p className="text-lg leading-relaxed text-muted-foreground">
-          Generate images from scripts, agents, and HTTP clients with the same
-          service layer used by the app.
+          A drop-in skill that teaches Claude, Cursor, Codex, and other coding
+          agents how to use the Get Images MCP server well — model and aspect
+          ratio choices, prompt drafting, storage, and web optimization.
         </p>
         <div className="flex flex-wrap gap-3 pt-3">
           <Button asChild>
@@ -94,9 +113,9 @@ export default async function ApiDocsPage() {
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/openapi.json">
-              <FileJson className="size-4" />
-              OpenAPI JSON
+            <Link href="/docs/mcp">
+              <FileCode className="size-4" />
+              MCP setup
             </Link>
           </Button>
         </div>
@@ -105,10 +124,10 @@ export default async function ApiDocsPage() {
       <div className="mt-14 grid gap-10 lg:grid-cols-[220px_1fr] lg:items-start">
         <aside className="rounded-2xl border bg-card p-5 shadow-sm lg:sticky lg:top-24">
           <h2 className="font-display text-lg font-medium">Resources</h2>
-          <nav aria-label="API docs resources" className="mt-4 space-y-2">
+          <nav aria-label="Skill docs resources" className="mt-4 space-y-2">
             <Link
               href="/docs/api"
-              className="block rounded-[10px] bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
+              className="block rounded-[10px] px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               REST API
             </Link>
@@ -120,15 +139,9 @@ export default async function ApiDocsPage() {
             </Link>
             <Link
               href="/docs/skill"
-              className="block rounded-[10px] px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="block rounded-[10px] bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
             >
               Agent skill
-            </Link>
-            <Link
-              href="/openapi.json"
-              className="block rounded-[10px] px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              OpenAPI schema
             </Link>
             <Link
               href="/dashboard/keys"
@@ -140,7 +153,9 @@ export default async function ApiDocsPage() {
         </aside>
 
         <article className="min-w-0 rounded-2xl border bg-card px-5 py-2 shadow-sm sm:px-8">
-          <Markdown components={markdownComponents}>{markdown}</Markdown>
+          <Markdown components={markdownComponents} rehypePlugins={[rehypeRaw]}>
+            {markdown}
+          </Markdown>
         </article>
       </div>
     </div>

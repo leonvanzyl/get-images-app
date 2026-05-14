@@ -137,6 +137,12 @@ export default async function McpDocsPage() {
               Remote MCP
             </Link>
             <Link
+              href="/docs/skill"
+              className="block rounded-[10px] px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              Agent skill
+            </Link>
+            <Link
               href="/dashboard/keys"
               className="block rounded-[10px] px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
