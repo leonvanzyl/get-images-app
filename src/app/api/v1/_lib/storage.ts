@@ -2,6 +2,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { get } from "@vercel/blob";
 
+// Invariant: generation.imageUrl is ONLY ever populated by upload() in
+// src/lib/storage.ts, which produces one of these two shapes. If a future
+// feature adds a third writer (e.g. importing external images, provider
+// direct URLs), update readImageBytes() — don't let an absolute URL
+// silently fall through to fetch() (SSRF risk).
 const LOCAL_UPLOADS_PREFIX = "/uploads/";
 const BLOB_ROUTE_PREFIX = "/api/blob/";
 

@@ -98,13 +98,18 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Attach CSP with a fresh nonce. Propagate the nonce on the request headers
-  // so Next.js stamps it onto its own injected <script> tags.
+  // Attach CSP with a fresh nonce. Two request headers are set:
+  //   - x-nonce: read by RootLayout via headers() to nonce our JSON-LD script.
+  //   - Content-Security-Policy: Next.js parses the nonce out of this header
+  //     (next/dist/server/app-render/get-script-nonce-from-header.js) and
+  //     stamps it onto its own injected framework/RSC <script> tags. Without
+  //     this, 'strict-dynamic' blocks Next.js's own scripts in production.
   const nonce = generateNonce();
   const csp = buildCsp(nonce);
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
