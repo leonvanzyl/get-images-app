@@ -28,6 +28,17 @@ const serverEnvSchema = z.object({
   // Storage
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
 
+  // Email (Resend)
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z
+    .string()
+    .min(1)
+    .regex(
+      /^(?:.+\s)?<?[^\s@]+@[^\s@]+\.[^\s@]+>?$/,
+      "EMAIL_FROM must be an email address or 'Name <email@domain>' format"
+    )
+    .default("Get Images <noreply@getimages.dev>"),
+
   // App
   NODE_ENV: z
     .enum(["development", "production", "test"])
@@ -116,6 +127,10 @@ export function checkEnv(): void {
 
   if (!process.env.OPENROUTER_API_KEY) {
     warnings.push("OPENROUTER_API_KEY is not set. AI chat will not work.");
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    warnings.push("RESEND_API_KEY is not set. Password reset and email verification emails will fail.");
   }
 
   if (!process.env.OPENAI_API_KEY && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {

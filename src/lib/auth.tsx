@@ -3,6 +3,9 @@ import { polar, checkout, webhooks } from "@polar-sh/better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { addCredits } from "@/services/credits";
+import { sendEmail } from "@/services/email";
+import ResetPasswordEmail from "@/services/email/templates/reset-password";
+import VerifyEmail from "@/services/email/templates/verify-email";
 import { db } from "./db";
 import { CREDIT_PACKS, getProductCredits, polarClient } from "./polar";
 
@@ -36,27 +39,28 @@ export const auth = betterAuth({
     // and reset-password-form.tsx).
     minPasswordLength: 8,
     sendResetPassword: async ({ user, url }) => {
-      if (
-        process.env.NODE_ENV === "development" &&
-        process.env.DEBUG_AUTH_LINKS === "1"
-      ) {
-        console.warn(
-          `\n${"=".repeat(60)}\nPASSWORD RESET REQUEST\nUser: ${user.email}\nReset URL: ${url}\n${"=".repeat(60)}\n`
-        );
-      }
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your Get Images password",
+        react: (
+          <ResetPasswordEmail
+            userName={user.name || "there"}
+            resetUrl={url}
+          />
+        ),
+      });
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url }) => {
-      if (
-        process.env.NODE_ENV === "development" &&
-        process.env.DEBUG_AUTH_LINKS === "1"
-      ) {
-        console.warn(
-          `\n${"=".repeat(60)}\nEMAIL VERIFICATION\nUser: ${user.email}\nVerification URL: ${url}\n${"=".repeat(60)}\n`
-        );
-      }
+      await sendEmail({
+        to: user.email,
+        subject: "Confirm your email for Get Images",
+        react: (
+          <VerifyEmail userName={user.name || "there"} verifyUrl={url} />
+        ),
+      });
     },
   },
   plugins: [

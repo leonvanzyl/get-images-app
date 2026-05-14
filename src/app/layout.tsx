@@ -96,9 +96,18 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/*
+          Browsers strip the `nonce` attribute from script elements after the
+          page is parsed (Chrome/Firefox security feature to prevent attacker
+          scripts from reading sibling nonces). React then sees the DOM has
+          no nonce while the virtual DOM still does, triggering a hydration
+          warning. The mismatch is benign — the nonce already did its CSP
+          job at parse time — so we suppress it for this element only.
+        */}
         <script
           type="application/ld+json"
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
