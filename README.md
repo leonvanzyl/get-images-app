@@ -1,5 +1,7 @@
 # Get Images
 
+[![skills.sh](https://skills.sh/b/leonvanzyl/get-images-app)](https://skills.sh/leonvanzyl/get-images-app/get-images)
+
 > Generate images from any agent, script, or browser. One API key, five models, four ways to call it.
 
 Get Images is a self-hostable image-generation platform built on Next.js. It exposes the same image-generation service through **a web UI**, **a REST API**, **a remote MCP server**, and **an installable agent skill** — so people, scripts, and AI agents can all hit it without learning a new SDK.
