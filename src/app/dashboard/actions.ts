@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { generation } from "@/lib/schema";
+import { deleteFile } from "@/lib/storage";
 import { getBalance, getAllModelPricing, type ModelPricingRow } from "@/services/credits";
 import {
   listModels,
@@ -144,6 +145,19 @@ export async function deleteGenerationAction(
 
   if (!row) {
     return { success: false, error: "Image not found." };
+  }
+
+  // Best-effort storage cleanup. If it throws, log the orphan and still
+  // delete the DB row — the user expects the image to disappear from their
+  // library, and a transient storage failure shouldn't block that. Ops can
+  // sweep orphans from logs.
+  try {
+    await deleteFile(row.imageUrl);
+  } catch (err) {
+    console.error(
+      `deleteGenerationAction: failed to delete blob for generation ${id} (imageUrl=${row.imageUrl}); orphan possible.`,
+      err,
+    );
   }
 
   await db.delete(generation).where(eq(generation.id, id));

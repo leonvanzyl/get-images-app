@@ -1,7 +1,10 @@
 import { existsSync } from "fs";
 import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { isAbsolute, join, relative, resolve } from "path";
 import { put, del } from "@vercel/blob";
+
+const LOCAL_UPLOADS_PREFIX = "/uploads/";
+const BLOB_ROUTE_PREFIX = "/api/blob/";
 
 /**
  * Result from uploading a file to storage
@@ -187,35 +190,79 @@ export async function upload(
 }
 
 /**
- * Deletes a file from storage
- * 
- * @param url - The URL of the file to delete
- * 
+ * Deletes a file from storage. Routes by URL shape — `/api/blob/...` goes to
+ * Vercel Blob, `/uploads/...` to the local filesystem — rather than by env
+ * presence, so a stale URL from a previous deployment configuration still
+ * lands in the right backend.
+ *
+ * Throws on unrecognized URL shapes, missing Vercel Blob token, malformed
+ * encoding, or attempted path traversal. Idempotent on the local branch
+ * (no-op if the file is already gone); Vercel Blob's `del` is idempotent
+ * by design.
+ *
+ * @param url - The stored URL (as returned by `upload()`).
+ *
  * @example
  * ```ts
- * await deleteFile("https://blob.vercel.io/...");
- * // or
- * await deleteFile("/uploads/avatars/avatar.png");
+ * await deleteFile("/api/blob/generations/abc.png");
+ * await deleteFile("/uploads/generations/abc.png");
  * ```
  */
 export async function deleteFile(url: string): Promise<void> {
-  const hasVercelBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  if (url.startsWith(BLOB_ROUTE_PREFIX)) {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      throw new Error(
+        "deleteFile: BLOB_READ_WRITE_TOKEN is not set; cannot delete Vercel Blob",
+      );
+    }
 
-  if (hasVercelBlob) {
-    // Delete from Vercel Blob
-    await del(url);
-  } else {
-    // Delete from local filesystem
-    // Extract pathname from URL (e.g., /uploads/avatars/avatar.png -> avatars/avatar.png)
-    const pathname = url.replace(/^\/uploads\//, "");
-    const filepath = join(process.cwd(), "public", "uploads", pathname);
+    let pathname: string;
+    try {
+      pathname = decodeURIComponent(url.slice(BLOB_ROUTE_PREFIX.length));
+    } catch {
+      throw new Error(`deleteFile: malformed blob URL ${url}`);
+    }
+    if (!pathname) {
+      throw new Error(`deleteFile: empty blob pathname in ${url}`);
+    }
 
-    // Only attempt to delete if file exists
+    await del(pathname, { token });
+    return;
+  }
+
+  if (url.startsWith(LOCAL_UPLOADS_PREFIX)) {
+    let pathname: string;
+    try {
+      pathname = decodeURIComponent(url.slice(LOCAL_UPLOADS_PREFIX.length));
+    } catch {
+      throw new Error(`deleteFile: malformed upload URL ${url}`);
+    }
+    if (!pathname || pathname.includes("\0")) {
+      throw new Error(`deleteFile: invalid upload pathname in ${url}`);
+    }
+
+    // Defense in depth — readLocalUpload uses the same containment check.
+    // Refuse anything that resolves outside public/uploads.
+    const uploadsRoot = resolve(process.cwd(), "public", "uploads");
+    const filepath = resolve(uploadsRoot, pathname);
+    const relativeFromRoot = relative(uploadsRoot, filepath);
+    if (
+      !relativeFromRoot ||
+      relativeFromRoot.startsWith("..") ||
+      isAbsolute(relativeFromRoot)
+    ) {
+      throw new Error(`deleteFile: path traversal blocked in ${url}`);
+    }
+
     if (existsSync(filepath)) {
       const { unlink } = await import("fs/promises");
       await unlink(filepath);
     }
+    return;
   }
+
+  throw new Error(`deleteFile: unrecognized URL shape ${url}`);
 }
 
 
