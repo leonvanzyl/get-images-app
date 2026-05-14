@@ -211,4 +211,14 @@ The visual system — Open Studio: warm cream canvas, coral accent, Fraunces dis
 
 ## License
 
-MIT — see [`LICENSE`](./LICENSE).
+This project is licensed under the **Functional Source License v1.1 with Apache 2.0 Future License** (`FSL-1.1-Apache-2.0`). See [`LICENSE`](./LICENSE) for the full text.
+
+In plain English:
+
+- You may **read, modify, and self-host** this software for any purpose **except** offering it to others as a competing image-generation product or service.
+- Internal use, personal use, non-commercial education, and non-commercial research are all permitted.
+- Two years after each released version is published, that version automatically becomes available under the **Apache License 2.0**.
+
+For commercial licensing (e.g. embedding this in a product that would otherwise be a Competing Use), contact Cognaitiv AI PTY LTD.
+
+© 2026 Cognaitiv AI PTY LTD. All rights reserved.
