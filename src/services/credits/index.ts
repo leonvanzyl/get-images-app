@@ -1,9 +1,15 @@
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { creditBalance, creditTransaction, modelPricing } from "@/lib/schema";
+import { creditBalance, creditTransaction } from "@/lib/schema";
+import {
+  loadAllPricing,
+  loadModelPricing,
+  type ModelPricingRow,
+} from "@/services/image-generation/model-repository";
 import { InsufficientCreditsError } from "./errors";
 
 export { InsufficientCreditsError } from "./errors";
+export type { ModelPricingRow } from "@/services/image-generation/model-repository";
 
 /**
  * Retrieve the current credit balance for a user.
@@ -26,15 +32,9 @@ export async function getModelCreditCost(
   modelId: string,
   thinkingLevel?: "default" | "deep",
 ): Promise<number> {
-  const [row] = await db
-    .select({
-      creditCost: modelPricing.creditCost,
-      thinkingHighCreditCost: modelPricing.thinkingHighCreditCost,
-    })
-    .from(modelPricing)
-    .where(eq(modelPricing.modelId, modelId));
+  const row = await loadModelPricing(modelId);
 
-  if (!row || row.creditCost === undefined) {
+  if (!row) {
     throw new Error(`No active pricing found for model "${modelId}".`);
   }
 
@@ -45,24 +45,11 @@ export async function getModelCreditCost(
   return row.creditCost;
 }
 
-export type ModelPricingRow = {
-  modelId: string;
-  creditCost: number;
-  thinkingHighCreditCost: number | null;
-};
-
 /**
  * Return all active model pricing rows, including deep-thinking surcharges.
  */
 export async function getAllModelPricing(): Promise<ModelPricingRow[]> {
-  return db
-    .select({
-      modelId: modelPricing.modelId,
-      creditCost: modelPricing.creditCost,
-      thinkingHighCreditCost: modelPricing.thinkingHighCreditCost,
-    })
-    .from(modelPricing)
-    .where(eq(modelPricing.isActive, true));
+  return loadAllPricing();
 }
 
 /**

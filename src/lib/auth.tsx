@@ -2,12 +2,16 @@ import { apiKey } from "@better-auth/api-key";
 import { polar, checkout, webhooks } from "@polar-sh/better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin as adminPlugin } from "better-auth/plugins/admin";
+import { eq } from "drizzle-orm";
 import { addCredits } from "@/services/credits";
 import { sendEmail } from "@/services/email";
 import ResetPasswordEmail from "@/services/email/templates/reset-password";
 import VerifyEmail from "@/services/email/templates/verify-email";
+import { isBootstrapAdminEmail } from "./admin-emails";
 import { db } from "./db";
 import { CREDIT_PACKS, getProductCredits, polarClient } from "./polar";
+import { user } from "./schema";
 
 const baseURL =
   process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -63,6 +67,41 @@ export const auth = betterAuth({
       });
     },
   },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (u) => {
+          if (isBootstrapAdminEmail(u.email)) {
+            return { data: { ...u, role: "admin" } };
+          }
+          return { data: u };
+        },
+      },
+    },
+    session: {
+      create: {
+        after: async (s) => {
+          // Promote pre-existing users whose email matches ADMIN_EMAILS but
+          // who signed up before that env var contained their address.
+          const [row] = await db
+            .select({ email: user.email, role: user.role })
+            .from(user)
+            .where(eq(user.id, s.userId))
+            .limit(1);
+          if (
+            row &&
+            isBootstrapAdminEmail(row.email) &&
+            row.role !== "admin"
+          ) {
+            await db
+              .update(user)
+              .set({ role: "admin", updatedAt: new Date() })
+              .where(eq(user.id, s.userId));
+          }
+        },
+      },
+    },
+  },
   plugins: [
     apiKey({
       apiKeyHeaders: ["x-api-key", "authorization"],
@@ -78,6 +117,7 @@ export const auth = betterAuth({
         charactersLength: 12,
       },
     }),
+    adminPlugin(),
     polar({
       client: polarClient,
       createCustomerOnSignUp: true,

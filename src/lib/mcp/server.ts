@@ -11,8 +11,8 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
  * Order is non-functional but matches the documented capability order
  * (generate, list, get, account, usage).
  */
-export function buildMcpServer(server: McpServer): void {
-  registerGenerateImageTool(server);
+export async function buildMcpServer(server: McpServer): Promise<void> {
+  await registerGenerateImageTool(server);
   registerListImagesTool(server);
   registerGetImageTool(server);
   registerGetAccountTool(server);

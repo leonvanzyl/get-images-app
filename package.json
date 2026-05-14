@@ -20,7 +20,7 @@
     "db:studio": "drizzle-kit studio",
     "db:dev": "drizzle-kit push",
     "db:reset": "drizzle-kit drop && drizzle-kit push",
-    "db:seed-pricing": "npx tsx --env-file .env scripts/seed-model-pricing.ts"
+    "db:seed-models": "npx tsx --env-file .env scripts/seed-models.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.72",

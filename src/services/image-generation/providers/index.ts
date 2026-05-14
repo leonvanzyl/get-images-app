@@ -22,7 +22,7 @@ export function getApiKey(providerId: ProviderId): string {
 export async function callProvider(
   providerId: ProviderId,
   modelId: string,
-  input: GenerateImageInput,
+  input: GenerateImageInput & { thinkingApiValue?: string },
 ) {
   const apiKey = getApiKey(providerId);
 

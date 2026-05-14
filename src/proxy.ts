@@ -87,7 +87,9 @@ export async function proxy(request: NextRequest) {
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/") ||
     pathname === "/profile" ||
-    pathname.startsWith("/profile/");
+    pathname.startsWith("/profile/") ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/");
 
   if (isProtected) {
     const sessionCookie = getSessionCookie(request);

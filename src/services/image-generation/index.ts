@@ -9,12 +9,16 @@ import {
   InsufficientCreditsError,
 } from "@/services/credits";
 import { ValidationError, ProviderError } from "./errors";
-import { getModel } from "./models";
+import { getModel } from "./model-repository";
 import { callProvider } from "./providers";
-import type { GenerateImageInput, GenerateImageResult } from "./types";
+import type {
+  GenerateImageInput,
+  GenerateImageResult,
+  ImageModelDefinition,
+} from "./types";
 
-export { listModels, getModel } from "./models";
-export { SUPPORTED_ASPECT_RATIOS } from "./types";
+export { listModels, getModel } from "./model-repository";
+export { SUPPORTED_ASPECT_RATIOS, SUPPORTED_PROVIDERS } from "./types";
 export type {
   AspectRatio,
   GeneratedImage,
@@ -34,24 +38,39 @@ export type RunGenerationResult = GenerateImageResult & {
   };
 };
 
+/**
+ * Map the UI's "default" / "deep" toggle to the provider-specific thinking
+ * value declared on the model definition. Returns undefined when the model
+ * has no thinking support or the caller didn't request a thinking level.
+ */
+function resolveThinkingApiValue(
+  modelDef: ImageModelDefinition,
+  thinkingLevel: GenerateImageInput["thinkingLevel"],
+): string | undefined {
+  if (!modelDef.thinking || !thinkingLevel) return undefined;
+  return thinkingLevel === "deep" ? modelDef.thinking.deep : modelDef.thinking.default;
+}
+
 export async function generate(input: GenerateImageInput): Promise<GenerateImageResult> {
   const trimmedPrompt = input.prompt.trim();
   if (!trimmedPrompt) {
     throw new ValidationError("Prompt cannot be empty.");
   }
 
-  const modelDef = getModel(input.modelId);
+  const modelDef = await getModel(input.modelId);
   if (!modelDef) {
     throw new ValidationError(`Unknown model: ${input.modelId}`);
   }
 
   const { providerId, modelId: providerModelId } = modelDef;
+  const thinkingApiValue = resolveThinkingApiValue(modelDef, input.thinkingLevel);
 
   let generatedFile;
   try {
     generatedFile = await callProvider(providerId, providerModelId, {
       ...input,
       prompt: trimmedPrompt,
+      ...(thinkingApiValue !== undefined ? { thinkingApiValue } : {}),
     });
   } catch (error) {
     if (error instanceof ValidationError) throw error;
@@ -111,7 +130,7 @@ export async function runGeneration(
   userId: string,
   input: RunGenerationInput
 ): Promise<RunGenerationResult> {
-  validateGenerationRequest(input);
+  await validateGenerationRequest(input);
 
   const creditCost = await getModelCreditCost(input.modelId, input.thinkingLevel);
   const balance = await getBalance(userId);
@@ -158,8 +177,8 @@ export async function runGeneration(
   }
 }
 
-function validateGenerationRequest(input: RunGenerationInput) {
-  const modelDef = getModel(input.modelId);
+async function validateGenerationRequest(input: RunGenerationInput) {
+  const modelDef = await getModel(input.modelId);
   if (!modelDef) {
     throw new ValidationError(`Unknown model: ${input.modelId}`);
   }

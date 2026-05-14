@@ -9,8 +9,10 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { getAllModelPricing } from "@/services/credits";
-import { IMAGE_MODELS } from "@/services/image-generation/models";
+import {
+  loadActiveModels,
+  loadAllPricing,
+} from "@/services/image-generation/model-repository";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -77,20 +79,23 @@ const CREDIT_PACKS: CreditPack[] = [
 /* ------------------------------------------------------------------ */
 
 export default async function PricingPage() {
-  const pricingRows = await getAllModelPricing();
-
-  // Merge pricing data with display names from the model registry, dropping
-  // rows whose model is no longer in the registry (defensive — the table
-  // should never advertise a model we can't actually serve).
-  const models = pricingRows
-    .map((row) => {
-      const model = IMAGE_MODELS.find((m) => m.id === row.modelId);
-      if (!model) return null;
+  // Pull active models + their pricing in one shot. Both functions read from
+  // the same `model` table and are wrapped in React.cache, so this is a
+  // single DB round-trip per request.
+  const [activeModels, pricingRows] = await Promise.all([
+    loadActiveModels(),
+    loadAllPricing(),
+  ]);
+  const pricingById = new Map(pricingRows.map((p) => [p.modelId, p]));
+  const models = activeModels
+    .map((m) => {
+      const price = pricingById.get(m.id);
+      if (!price) return null;
       return {
-        modelId: row.modelId,
-        name: model.name,
-        creditCost: row.creditCost,
-        thinkingHighCreditCost: row.thinkingHighCreditCost,
+        modelId: m.id,
+        name: m.name,
+        creditCost: price.creditCost,
+        thinkingHighCreditCost: price.thinkingHighCreditCost,
       };
     })
     .filter((m): m is NonNullable<typeof m> => m !== null);

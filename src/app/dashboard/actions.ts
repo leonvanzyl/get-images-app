@@ -18,6 +18,7 @@ import {
   type ImageModelDefinition,
 } from "@/services/image-generation";
 import { isKnownGenerationError } from "@/services/image-generation/errors";
+import { loadAllModels } from "@/services/image-generation/model-repository";
 
 const generateLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 
@@ -81,13 +82,17 @@ export async function generateImageAction(
 }
 
 export async function getAvailableModelsAction(): Promise<ImageModelDefinition[]> {
-  return listModels({ onlyConfigured: true });
+  return await listModels({ onlyConfigured: true });
 }
 
 export type LibraryImage = {
   id: string;
   prompt: string;
   model: string;
+  /** Display name resolved server-side from the model registry, e.g.
+   * "GPT Image 1.5". Falls back to the raw composite id when the model is no
+   * longer in the registry (removed/inactive). */
+  modelName: string;
   aspect: string;
   style: string;
   thinkingLevel: string | null;
@@ -106,10 +111,18 @@ export async function getLibraryImagesAction(): Promise<LibraryImage[]> {
     .where(eq(generation.userId, session.user.id))
     .orderBy(desc(generation.createdAt));
 
+  // Resolve model display names from the registry in one batched call. We
+  // include inactive models so historical generations still render their
+  // friendly name when the model was soft-deleted.
+  const everyModel = await loadAllModels();
+  const nameById = new Map<string, string>();
+  for (const m of everyModel) nameById.set(m.id, m.name);
+
   return rows.map((row) => ({
     id: row.id,
     prompt: row.prompt,
     model: row.modelId,
+    modelName: nameById.get(row.modelId) ?? row.modelId,
     aspect: row.aspectRatio,
     style: row.style ?? "Natural",
     thinkingLevel: row.thinkingLevel,

@@ -12,17 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { IMAGE_MODELS } from "@/services/image-generation/models";
-
-/**
- * Resolve a stored `model_id` (e.g. `"openai:gpt-image-1.5"`) to the friendly
- * display name (`"GPT Image 1.5"`). Falls back to the raw id when the model is
- * no longer in the registry — older library rows from removed models should
- * still render gracefully.
- */
-function modelDisplayName(modelId: string): string {
-  return IMAGE_MODELS.find((m) => m.id === modelId)?.name ?? modelId;
-}
 
 /**
  * Human-friendly label for the thinking level the user selected at generation
@@ -150,7 +139,7 @@ export function ImageLightbox({
                 <MetaRow label="Prompt">
                   <p className="text-pretty">{image.prompt}</p>
                 </MetaRow>
-                <MetaRow label="Model">{modelDisplayName(image.model)}</MetaRow>
+                <MetaRow label="Model">{image.modelName}</MetaRow>
                 <MetaRow label="Aspect">{image.aspect}</MetaRow>
                 <MetaRow label="Style">{image.style}</MetaRow>
                 {image.thinkingLevel ? (

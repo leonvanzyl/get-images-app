@@ -50,6 +50,13 @@
       "when": 1778666909482,
       "tag": "0006_rich_barracuda",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1778750000000,
+      "tag": "0007_admin_dashboard",
+      "breakpoints": true
     }
   ]
 }

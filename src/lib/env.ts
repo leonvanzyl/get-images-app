@@ -39,6 +39,10 @@ const serverEnvSchema = z.object({
     )
     .default("Get Images <noreply@getimages.dev>"),
 
+  // Admin bootstrap — comma-separated emails. Users whose email matches are
+  // auto-promoted to the `admin` role on sign-up and on session creation.
+  ADMIN_EMAILS: z.string().optional(),
+
   // App
   NODE_ENV: z
     .enum(["development", "production", "test"])

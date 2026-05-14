@@ -1,10 +1,7 @@
-import { IMAGE_MODELS } from "@/services/image-generation/models";
+import { listModels } from "@/services/image-generation/model-repository";
 import { SUPPORTED_ASPECT_RATIOS } from "@/services/image-generation/types";
 
 const BASE_URL = "https://getimages.dev";
-
-const modelIds = IMAGE_MODELS.map((model) => model.id);
-const thinkingModelIds = IMAGE_MODELS.filter((model) => model.thinking).map((model) => model.id);
 
 const errorResponse = {
   description: "Error response",
@@ -54,7 +51,13 @@ const paginationParameters = [
   },
 ];
 
-export function getOpenApiDocument() {
+export async function getOpenApiDocument() {
+  const models = await listModels();
+  const modelIds = models.map((model) => model.id);
+  const thinkingModelIds = models
+    .filter((model) => model.thinking)
+    .map((model) => model.id);
+
   return {
     openapi: "3.1.0",
     info: {

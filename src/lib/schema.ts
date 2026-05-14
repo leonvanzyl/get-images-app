@@ -7,6 +7,7 @@ import {
   index,
   uniqueIndex,
   uuid,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 // IMPORTANT! ID fields should ALWAYS use UUID types, EXCEPT the BetterAuth tables.
@@ -19,6 +20,11 @@ export const user = pgTable(
     email: text("email").notNull().unique(),
     emailVerified: boolean("email_verified").default(false).notNull(),
     image: text("image"),
+    // Better Auth admin plugin columns.
+    role: text("role").default("user"),
+    banned: boolean("banned").default(false),
+    banReason: text("ban_reason"),
+    banExpires: timestamp("ban_expires"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -43,6 +49,8 @@ export const session = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    // Better Auth admin plugin: set during active impersonation.
+    impersonatedBy: text("impersonated_by"),
   },
   (table) => [
     index("session_user_id_idx").on(table.userId),
@@ -187,21 +195,61 @@ export const creditTransaction = pgTable(
   ]
 );
 
-export const modelPricing = pgTable(
-  "model_pricing",
+export const model = pgTable(
+  "model",
   {
     id: uuid("id").defaultRandom().primaryKey(),
+    // Composite identifier, e.g. `openai:gpt-image-1.5`. Stable, unique.
     modelId: text("model_id").notNull(),
+    // Provider key validated by Zod allowlist (see SUPPORTED_PROVIDERS).
+    providerId: text("provider_id").notNull(),
+    // SDK-facing identifier, e.g. `gpt-image-1.5`.
+    providerModelId: text("provider_model_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull(),
+    // Aspect ratios this model accepts, in display order.
+    aspectRatios: text("aspect_ratios").array().notNull(),
+    // Mapping from UI "default" to the provider value (minimal | low). When
+    // null, the model has no thinking support and the UI hides the toggle.
+    thinkingDefault: text("thinking_default"),
+    // Mapping from UI "deep" to the provider value (high). Must be set iff
+    // thinkingDefault is set — enforced by CHECK + Zod.
+    thinkingHigh: text("thinking_high"),
     creditCost: integer("credit_cost").notNull(),
-    // Effective cost when the user selects "deep" thinking. Null = same as creditCost
-    // (or model doesn't support thinking).
+    // Cost charged when the user picks "deep" thinking. Null = same as base.
     thinkingHighCreditCost: integer("thinking_high_credit_cost"),
-    isActive: boolean("is_active").default(true),
+    isActive: boolean("is_active").default(true).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [uniqueIndex("model_pricing_model_id_idx").on(table.modelId)]
+  (table) => [
+    uniqueIndex("model_model_id_idx").on(table.modelId),
+    index("model_is_active_sort_idx").on(table.isActive, table.sortOrder),
+  ]
+);
+
+export const adminAuditLog = pgTable(
+  "admin_audit_log",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    // Nullable so audit history survives if the actor user row is deleted.
+    actorId: text("actor_id").references(() => user.id, { onDelete: "set null" }),
+    action: text("action").notNull(),
+    targetType: text("target_type"),
+    targetId: text("target_id"),
+    before: jsonb("before"),
+    after: jsonb("after"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("admin_audit_log_actor_id_idx").on(table.actorId),
+    index("admin_audit_log_action_idx").on(table.action),
+    index("admin_audit_log_target_idx").on(table.targetType, table.targetId),
+    index("admin_audit_log_created_at_idx").on(table.createdAt),
+  ]
 );

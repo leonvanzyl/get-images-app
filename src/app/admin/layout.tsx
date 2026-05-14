@@ -1,34 +1,25 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { DashboardChrome } from "@/components/dashboard/dashboard-chrome";
-import { auth } from "@/lib/auth";
-import { getBalance } from "@/services/credits";
+import { AdminChrome } from "@/components/admin/admin-chrome";
+import { requireAdmin } from "@/lib/admin-session";
 
-export default async function DashboardLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await requireAdmin();
 
-  if (!session) {
-    redirect("/login");
-  }
-
-  const creditBalance = await getBalance(session.user.id);
   const impersonatedBy = (
     session.session as { impersonatedBy?: string | null } | undefined
   )?.impersonatedBy;
   const isImpersonating = Boolean(impersonatedBy);
 
   return (
-    <DashboardChrome
+    <AdminChrome
       user={{
         name: session.user.name,
         email: session.user.email,
         image: session.user.image ?? null,
       }}
-      creditBalance={creditBalance}
       isImpersonating={isImpersonating}
       {...(isImpersonating
         ? {
@@ -40,6 +31,6 @@ export default async function DashboardLayout({
         : {})}
     >
       {children}
-    </DashboardChrome>
+    </AdminChrome>
   );
 }

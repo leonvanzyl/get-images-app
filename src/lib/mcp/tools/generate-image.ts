@@ -4,16 +4,18 @@ import { signImageUrl } from "@/lib/mcp/signed-urls";
 import {
   runGeneration,
   SUPPORTED_ASPECT_RATIOS,
+  type ImageModelDefinition,
   type RunGenerationInput,
 } from "@/services/image-generation";
-import { IMAGE_MODELS } from "@/services/image-generation/models";
+import { loadActiveModels } from "@/services/image-generation/model-repository";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const COMMON_ASPECT_RATIOS = "1:1, 3:2, 2:3, 16:9, 9:16, 4:3, 3:4";
 
-function buildDescription(): string {
-  const modelList = IMAGE_MODELS.map((m) => `- ${m.id}: ${m.description}`).join("\n");
-  const thinkingModels = IMAGE_MODELS.filter((m) => m.thinking)
+function buildDescription(models: ImageModelDefinition[]): string {
+  const modelList = models.map((m) => `- ${m.id}: ${m.description}`).join("\n");
+  const thinkingModels = models
+    .filter((m) => m.thinking)
     .map((m) => m.id)
     .join(", ");
 
@@ -33,12 +35,13 @@ function buildDescription(): string {
   ].join("\n");
 }
 
-export function registerGenerateImageTool(server: McpServer): void {
+export async function registerGenerateImageTool(server: McpServer): Promise<void> {
+  const models = await loadActiveModels();
   server.registerTool(
     "getimages_generate_image",
     {
       title: "Generate an image",
-      description: buildDescription(),
+      description: buildDescription(models),
       inputSchema: {
         prompt: z.string().trim().min(1).max(8000),
         modelId: z.string().min(1),

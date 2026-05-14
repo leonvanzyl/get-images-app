@@ -1,4 +1,5 @@
-export type ProviderId = "openai" | "google";
+export const SUPPORTED_PROVIDERS = ["openai", "google"] as const;
+export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number];
 
 export const SUPPORTED_ASPECT_RATIOS = [
   "1:1",

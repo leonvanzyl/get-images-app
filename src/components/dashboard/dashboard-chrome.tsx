@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -27,16 +28,27 @@ import { DashboardSidebar, type DashboardUser } from "./dashboard-sidebar";
 export function DashboardChrome({
   user,
   creditBalance,
+  isImpersonating,
+  impersonationTarget,
   children,
 }: {
   user: DashboardUser;
   creditBalance: number;
+  isImpersonating?: boolean;
+  impersonationTarget?: { name?: string | null; email?: string | null };
   children: React.ReactNode;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground md:grid md:grid-cols-[240px_1fr]">
+    <div className="min-h-screen bg-background text-foreground">
+      {isImpersonating ? (
+        <ImpersonationBanner
+          targetName={impersonationTarget?.name ?? null}
+          targetEmail={impersonationTarget?.email ?? null}
+        />
+      ) : null}
+      <div className="md:grid md:grid-cols-[240px_1fr]">
       <aside className="sticky top-0 hidden h-screen overflow-y-auto bg-sidebar md:block">
         <DashboardSidebar user={user} creditBalance={creditBalance} />
       </aside>
@@ -72,6 +84,7 @@ export function DashboardChrome({
         </header>
 
         <main className="flex-1">{children}</main>
+      </div>
       </div>
 
       <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
