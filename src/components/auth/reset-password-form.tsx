@@ -65,6 +65,17 @@ export function ResetPasswordForm() {
       return
     }
 
+    if (
+      !/[a-z]/.test(password) ||
+      !/[A-Z]/.test(password) ||
+      !/\d/.test(password)
+    ) {
+      setFormError(
+        "Include an uppercase letter, a lowercase letter, and a number."
+      )
+      return
+    }
+
     setIsPending(true)
 
     try {

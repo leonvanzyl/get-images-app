@@ -144,7 +144,14 @@ export async function runGeneration(
     };
   } catch (error) {
     if (deducted && !(error instanceof InsufficientCreditsError)) {
-      await refundCredit(userId, creditCost, "Generation failed — credits refunded");
+      try {
+        await refundCredit(userId, creditCost, "Generation failed — credits refunded");
+      } catch (refundError) {
+        console.error(
+          `Credit refund failed for user ${userId} after generation error. Manual reconciliation required.`,
+          refundError,
+        );
+      }
     }
 
     throw error;

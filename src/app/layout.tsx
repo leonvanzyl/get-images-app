@@ -1,4 +1,5 @@
 import { Fraunces, Geist, JetBrains_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -82,16 +83,22 @@ const jsonLd = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Nonce is injected by src/proxy.ts so this inline script passes the
+  // strict, nonce-based CSP. Falls back to undefined on routes the proxy
+  // didn't touch — the script still renders, just without a nonce.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>

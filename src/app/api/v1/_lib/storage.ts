@@ -9,19 +9,19 @@ export async function readImageBytes(imageUrl: string): Promise<Buffer | null> {
   if (imageUrl.startsWith(LOCAL_UPLOADS_PREFIX)) {
     return readLocalUpload(imageUrl);
   }
-
   if (imageUrl.startsWith(BLOB_ROUTE_PREFIX)) {
     return readBlobRoute(imageUrl);
   }
-
-  return readAbsoluteUrl(imageUrl);
+  console.error("readImageBytes: unrecognized imageUrl shape", imageUrl);
+  return null;
 }
 
 async function readLocalUpload(imageUrl: string): Promise<Buffer | null> {
   let relativePath: string;
   try {
     relativePath = decodeURIComponent(imageUrl.slice(LOCAL_UPLOADS_PREFIX.length));
-  } catch {
+  } catch (err) {
+    console.error("readLocalUpload: decodeURIComponent failed", err);
     return null;
   }
 
@@ -39,7 +39,8 @@ async function readLocalUpload(imageUrl: string): Promise<Buffer | null> {
 
   try {
     return await readFile(filePath);
-  } catch {
+  } catch (err) {
+    console.error("readLocalUpload: readFile failed for", filePath, err);
     return null;
   }
 }
@@ -53,7 +54,8 @@ async function readBlobRoute(imageUrl: string): Promise<Buffer | null> {
   let blobPath: string;
   try {
     blobPath = decodeURIComponent(imageUrl.slice(BLOB_ROUTE_PREFIX.length));
-  } catch {
+  } catch (err) {
+    console.error("readBlobRoute: decodeURIComponent failed", err);
     return null;
   }
 
@@ -77,31 +79,8 @@ async function readBlobRoute(imageUrl: string): Promise<Buffer | null> {
     }
 
     return streamToBuffer(result.stream);
-  } catch {
-    return null;
-  }
-}
-
-async function readAbsoluteUrl(imageUrl: string): Promise<Buffer | null> {
-  let url: URL;
-  try {
-    url = new URL(imageUrl);
-  } catch {
-    return null;
-  }
-
-  if (url.protocol !== "http:" && url.protocol !== "https:") {
-    return null;
-  }
-
-  try {
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) {
-      return null;
-    }
-
-    return Buffer.from(await response.arrayBuffer());
-  } catch {
+  } catch (err) {
+    console.error("readBlobRoute: Vercel Blob get failed for", blobPath, err);
     return null;
   }
 }

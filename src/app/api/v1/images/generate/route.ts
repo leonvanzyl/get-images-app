@@ -12,6 +12,7 @@ import {
   SUPPORTED_ASPECT_RATIOS,
   type RunGenerationInput,
 } from "@/services/image-generation";
+import { isKnownGenerationError } from "@/services/image-generation/errors";
 
 export const runtime = "nodejs";
 
@@ -75,22 +76,4 @@ export async function POST(request: Request) {
     console.error("REST image generation failed:", error);
     return jsonError("Image generation failed.", 500);
   }
-}
-
-function isKnownGenerationError(error: unknown): error is Error {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-
-  const codedError = error as Error & { code?: unknown };
-  const code = typeof codedError.code === "string" ? codedError.code : undefined;
-
-  return (
-    code === "VALIDATION_ERROR" ||
-    code === "INSUFFICIENT_CREDITS" ||
-    code === "CREDIT_ERROR" ||
-    code === "USER_ERROR" ||
-    error.name === "ValidationError" ||
-    error.name === "InsufficientCreditsError"
-  );
 }

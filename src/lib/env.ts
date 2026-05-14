@@ -99,6 +99,16 @@ export function checkEnv(): void {
     throw new Error("BETTER_AUTH_SECRET is required");
   }
 
+  // Refuse to boot with the example secret value from env.example. Anyone
+  // who copied env.example without rotating is publicly known to be
+  // running with this exact secret.
+  const LEAKED_EXAMPLE_SECRETS = new Set(["qtD4Ssa0t5jY7ewALgai97sKhAtn7Ysc"]);
+  if (LEAKED_EXAMPLE_SECRETS.has(process.env.BETTER_AUTH_SECRET!)) {
+    throw new Error(
+      "BETTER_AUTH_SECRET is set to the value that previously shipped in env.example. Rotate it: openssl rand -base64 32",
+    );
+  }
+
   // Check optional variables and warn
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     warnings.push("Google OAuth is not configured. Social login will be disabled.");

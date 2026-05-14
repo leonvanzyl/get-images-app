@@ -31,3 +31,17 @@ export class ValidationError extends ImageGenerationError {
     this.name = "ValidationError";
   }
 }
+
+export function isKnownGenerationError(error: unknown): error is Error {
+  if (!(error instanceof Error)) return false;
+  const code = (error as Error & { code?: unknown }).code;
+  return (
+    (typeof code === "string" &&
+      (code === "VALIDATION_ERROR" ||
+        code === "INSUFFICIENT_CREDITS" ||
+        code === "CREDIT_ERROR" ||
+        code === "USER_ERROR")) ||
+    error.name === "ValidationError" ||
+    error.name === "InsufficientCreditsError"
+  );
+}

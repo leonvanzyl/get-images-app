@@ -78,7 +78,8 @@ export function verifyImageSignature(params: {
   let providedBuf: Buffer;
   try {
     providedBuf = Buffer.from(sig, "base64url");
-  } catch {
+  } catch (err) {
+    console.error("verifyImageSignature: base64url decode failed", err);
     return false;
   }
 

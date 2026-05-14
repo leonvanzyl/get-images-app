@@ -16,6 +16,7 @@ import {
   type GeneratedImage,
   type ImageModelDefinition,
 } from "@/services/image-generation";
+import { isKnownGenerationError } from "@/services/image-generation/errors";
 
 const generateLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 
@@ -70,8 +71,11 @@ export async function generateImageAction(
     revalidatePath("/dashboard", "layout");
     return { success: true, data: result };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return { success: false, error: message };
+    if (isKnownGenerationError(error)) {
+      return { success: false, error: error.message };
+    }
+    console.error("Dashboard image generation failed:", error);
+    return { success: false, error: "Image generation failed. Please try again." };
   }
 }
 

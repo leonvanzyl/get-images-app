@@ -45,18 +45,11 @@ const nextConfig: NextConfig = {
             value: "strict-origin-when-cross-origin",
           },
           {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://*.public.blob.vercel-storage.com https://picsum.photos; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'",
-          },
+          // Content-Security-Policy is set per-request in src/proxy.ts so it can
+          // include a fresh nonce that Next.js propagates to its injected scripts.
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",

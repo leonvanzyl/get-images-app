@@ -1,0 +1,32 @@
+# Dependabot configuration. Opens weekly PRs for outdated npm packages
+# and GitHub Actions versions. Grouped so the PR list stays manageable.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "Europe/London"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase-if-necessary
+    groups:
+      production-deps:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      dev-deps:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "Europe/London"
+    open-pull-requests-limit: 3
